@@ -42,72 +42,128 @@ function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [openDropdown]);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
     setOpenDropdown(null);
   }, [location.pathname]);
 
   const isActive = (to) => location.pathname === to;
-
   const isDropdownActive = (children) =>
     children.some((child) => location.pathname === child.to);
-
-  const toggleDropdown = (label) => {
+  const toggleDropdown = (label) =>
     setOpenDropdown((prev) => (prev === label ? null : label));
-  };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white shadow-sm">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+    <nav
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 50,
+        backgroundColor: "#ffffff",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+      }}
+    >
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            height: 64,
+          }}
+        >
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <Sparkles className="h-6 w-6" style={{ color: "#F5A623" }} />
+          <Link
+            to="/"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              textDecoration: "none",
+            }}
+          >
+            <Sparkles style={{ width: 24, height: 24, color: "#F5A623" }} />
             <span
-              className="text-lg font-bold"
-              style={{ color: "#0F2D5E", fontFamily: "Inter, sans-serif" }}
+              style={{
+                fontSize: 18,
+                fontWeight: 700,
+                color: "#0F2D5E",
+              }}
             >
               My Spark SGO
             </span>
           </Link>
 
-          {/* Desktop nav links */}
-          <div className="hidden items-center gap-1 md:flex">
+          {/* Desktop nav */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+            className="hidden md:flex"
+          >
             {navLinks.map((link) =>
               link.children ? (
                 <div
                   key={link.label}
-                  className="relative"
+                  style={{ position: "relative" }}
                   ref={(el) => (dropdownRefs.current[link.label] = el)}
                 >
                   <button
                     onClick={() => toggleDropdown(link.label)}
-                    className={`inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 ${
-                      isDropdownActive(link.children)
-                        ? "border-b-2 text-[#0F2D5E]"
-                        : "text-gray-600"
-                    }`}
-                    style={
-                      isDropdownActive(link.children)
-                        ? { borderBottomColor: "#0F2D5E" }
-                        : {}
-                    }
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      padding: "8px 12px",
+                      borderRadius: 6,
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: isDropdownActive(link.children)
+                        ? "#0F2D5E"
+                        : "#4b5563",
+                      border: "none",
+                      background: "none",
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                      borderBottom: isDropdownActive(link.children)
+                        ? "2px solid #0F2D5E"
+                        : "2px solid transparent",
+                    }}
                   >
                     {link.label}
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown style={{ width: 16, height: 16 }} />
                   </button>
                   {openDropdown === link.label && (
-                    <div className="absolute left-0 top-full mt-1 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5">
+                    <div
+                      style={{
+                        position: "absolute",
+                        left: 0,
+                        top: "100%",
+                        marginTop: 4,
+                        width: 200,
+                        borderRadius: 8,
+                        backgroundColor: "#ffffff",
+                        boxShadow:
+                          "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)",
+                        border: "1px solid #e5e7eb",
+                        padding: "4px 0",
+                        zIndex: 100,
+                      }}
+                    >
                       {link.children.map((child) => (
                         <Link
                           key={child.to}
                           to={child.to}
-                          className={`block px-4 py-2 text-sm transition-colors hover:bg-gray-50 ${
-                            isActive(child.to)
-                              ? "font-semibold text-[#0F2D5E]"
-                              : "text-gray-700"
-                          }`}
+                          style={{
+                            display: "block",
+                            padding: "10px 16px",
+                            fontSize: 14,
+                            color: isActive(child.to) ? "#0F2D5E" : "#374151",
+                            fontWeight: isActive(child.to) ? 600 : 400,
+                            textDecoration: "none",
+                          }}
                         >
                           {child.label}
                         </Link>
@@ -119,16 +175,17 @@ function Navbar() {
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 ${
-                    isActive(link.to)
-                      ? "border-b-2 text-[#0F2D5E]"
-                      : "text-gray-600"
-                  }`}
-                  style={
-                    isActive(link.to)
-                      ? { borderBottomColor: "#0F2D5E" }
-                      : {}
-                  }
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: 6,
+                    fontSize: 14,
+                    fontWeight: 500,
+                    color: isActive(link.to) ? "#0F2D5E" : "#4b5563",
+                    textDecoration: "none",
+                    borderBottom: isActive(link.to)
+                      ? "2px solid #0F2D5E"
+                      : "2px solid transparent",
+                  }}
                 >
                   {link.label}
                 </Link>
@@ -136,27 +193,42 @@ function Navbar() {
             )}
           </div>
 
-          {/* Right: Get Started + Mobile toggle */}
-          <div className="flex items-center gap-3">
+          {/* Right side */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <Link
               to="/apply/family"
-              className="hidden rounded-full px-5 py-2 text-sm font-semibold transition-opacity hover:opacity-90 md:inline-block"
+              className="hidden md:inline-block"
               style={{
+                padding: "8px 20px",
+                borderRadius: 999,
                 backgroundColor: "#F5A623",
                 color: "#0F2D5E",
+                fontWeight: 600,
+                fontSize: 14,
+                textDecoration: "none",
               }}
             >
               Get Started
             </Link>
             <button
-              className="inline-flex items-center justify-center rounded-md p-2 text-gray-600 hover:bg-gray-100 md:hidden"
+              className="md:hidden"
               onClick={() => setMobileOpen((prev) => !prev)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 8,
+                border: "none",
+                background: "none",
+                cursor: "pointer",
+                color: "#374151",
+              }}
               aria-label="Toggle menu"
             >
               {mobileOpen ? (
-                <X className="h-6 w-6" />
+                <X style={{ width: 24, height: 24 }} />
               ) : (
-                <Menu className="h-6 w-6" />
+                <Menu style={{ width: 24, height: 24 }} />
               )}
             </button>
           </div>
@@ -165,67 +237,106 @@ function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="border-t bg-white md:hidden">
-          <div className="space-y-1 px-4 pb-4 pt-2">
-            {navLinks.map((link) =>
-              link.children ? (
-                <div key={link.label}>
-                  <button
-                    onClick={() => toggleDropdown(link.label)}
-                    className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 ${
-                      isDropdownActive(link.children)
-                        ? "text-[#0F2D5E]"
-                        : "text-gray-600"
-                    }`}
-                  >
-                    {link.label}
-                    <ChevronDown
-                      className={`h-4 w-4 transition-transform ${
-                        openDropdown === link.label ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                  {openDropdown === link.label && (
-                    <div className="ml-4 space-y-1">
-                      {link.children.map((child) => (
-                        <Link
-                          key={child.to}
-                          to={child.to}
-                          className={`block rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-50 ${
-                            isActive(child.to)
-                              ? "font-semibold text-[#0F2D5E]"
-                              : "text-gray-600"
-                          }`}
-                        >
-                          {child.label}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 ${
-                    isActive(link.to) ? "text-[#0F2D5E]" : "text-gray-600"
-                  }`}
+        <div
+          className="md:hidden"
+          style={{
+            borderTop: "1px solid #e5e7eb",
+            backgroundColor: "#ffffff",
+            padding: "8px 16px 16px",
+          }}
+        >
+          {navLinks.map((link) =>
+            link.children ? (
+              <div key={link.label}>
+                <button
+                  onClick={() => toggleDropdown(link.label)}
+                  style={{
+                    display: "flex",
+                    width: "100%",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "10px 12px",
+                    borderRadius: 6,
+                    fontSize: 14,
+                    fontWeight: 500,
+                    color: isDropdownActive(link.children)
+                      ? "#0F2D5E"
+                      : "#4b5563",
+                    border: "none",
+                    background: "none",
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                  }}
                 >
                   {link.label}
-                </Link>
-              )
-            )}
-            <Link
-              to="/apply/family"
-              className="mt-2 block rounded-full px-5 py-2 text-center text-sm font-semibold transition-opacity hover:opacity-90"
-              style={{
-                backgroundColor: "#F5A623",
-                color: "#0F2D5E",
-              }}
-            >
-              Get Started
-            </Link>
-          </div>
+                  <ChevronDown
+                    style={{
+                      width: 16,
+                      height: 16,
+                      transform:
+                        openDropdown === link.label
+                          ? "rotate(180deg)"
+                          : "rotate(0)",
+                      transition: "transform 0.2s",
+                    }}
+                  />
+                </button>
+                {openDropdown === link.label && (
+                  <div style={{ marginLeft: 16 }}>
+                    {link.children.map((child) => (
+                      <Link
+                        key={child.to}
+                        to={child.to}
+                        style={{
+                          display: "block",
+                          padding: "8px 12px",
+                          fontSize: 14,
+                          color: isActive(child.to) ? "#0F2D5E" : "#4b5563",
+                          fontWeight: isActive(child.to) ? 600 : 400,
+                          textDecoration: "none",
+                        }}
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                key={link.to}
+                to={link.to}
+                style={{
+                  display: "block",
+                  padding: "10px 12px",
+                  borderRadius: 6,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: isActive(link.to) ? "#0F2D5E" : "#4b5563",
+                  textDecoration: "none",
+                }}
+              >
+                {link.label}
+              </Link>
+            )
+          )}
+          <Link
+            to="/apply/family"
+            style={{
+              display: "block",
+              marginTop: 8,
+              padding: "10px 20px",
+              borderRadius: 999,
+              backgroundColor: "#F5A623",
+              color: "#0F2D5E",
+              fontWeight: 600,
+              fontSize: 14,
+              textDecoration: "none",
+              textAlign: "center",
+            }}
+          >
+            Get Started
+          </Link>
         </div>
       )}
     </nav>

@@ -3,26 +3,40 @@ import { ChevronRight } from "lucide-react";
 
 function PageHeader({ title, description, breadcrumbs = [] }) {
   return (
-    <div className="bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        {/* Breadcrumbs */}
+    <div style={{ backgroundColor: "#f9fafb", padding: "32px 24px" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         {breadcrumbs.length > 0 && (
-          <nav className="mb-4 flex items-center gap-1 text-sm text-gray-500">
+          <nav
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              fontSize: 14,
+              color: "#6b7280",
+              marginBottom: 16,
+              flexWrap: "wrap",
+            }}
+          >
             {breadcrumbs.map((crumb, index) => {
               const isLast = index === breadcrumbs.length - 1;
               return (
-                <span key={index} className="flex items-center gap-1">
+                <span
+                  key={index}
+                  style={{ display: "flex", alignItems: "center", gap: 4 }}
+                >
                   {index > 0 && (
-                    <ChevronRight className="h-4 w-4 text-gray-400" />
+                    <ChevronRight
+                      style={{ width: 16, height: 16, color: "#9ca3af" }}
+                    />
                   )}
                   {isLast || !crumb.href ? (
-                    <span className="font-medium text-gray-700">
+                    <span style={{ fontWeight: 500, color: "#374151" }}>
                       {crumb.label}
                     </span>
                   ) : (
                     <Link
                       to={crumb.href}
-                      className="transition-colors hover:text-[#0F2D5E]"
+                      style={{ color: "#6b7280", textDecoration: "none" }}
                     >
                       {crumb.label}
                     </Link>
@@ -32,18 +46,20 @@ function PageHeader({ title, description, breadcrumbs = [] }) {
             })}
           </nav>
         )}
-
-        {/* Title */}
         <h1
-          className="text-3xl font-bold"
-          style={{ color: "#0F2D5E", fontFamily: "Inter, sans-serif" }}
+          style={{
+            fontSize: "clamp(24px, 4vw, 32px)",
+            fontWeight: 700,
+            color: "#0F2D5E",
+            margin: 0,
+          }}
         >
           {title}
         </h1>
-
-        {/* Description */}
         {description && (
-          <p className="mt-2 text-base text-gray-600">{description}</p>
+          <p style={{ marginTop: 8, fontSize: 16, color: "#4b5563" }}>
+            {description}
+          </p>
         )}
       </div>
     </div>

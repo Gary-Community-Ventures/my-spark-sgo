@@ -1,14 +1,5 @@
 import { Link } from "react-router-dom";
-import {
-  Sparkles,
-  Globe,
-  MessageCircle,
-  Heart,
-  Users,
-  Mail,
-  Phone,
-  MapPin,
-} from "lucide-react";
+import { Sparkles, Globe, MessageCircle, Heart, Users, Mail, Phone, MapPin } from "lucide-react";
 
 const quickLinks = [
   { label: "Home", to: "/" },
@@ -19,58 +10,88 @@ const quickLinks = [
 ];
 
 const socialLinks = [
-  { Icon: Globe, label: "Website", href: "#" },
-  { Icon: MessageCircle, label: "Twitter", href: "#" },
-  { Icon: Heart, label: "Instagram", href: "#" },
-  { Icon: Users, label: "LinkedIn", href: "#" },
+  { Icon: Globe, label: "Website" },
+  { Icon: MessageCircle, label: "Twitter" },
+  { Icon: Heart, label: "Instagram" },
+  { Icon: Users, label: "LinkedIn" },
 ];
 
 function Footer() {
   return (
-    <footer style={{ backgroundColor: "#0F2D5E" }} className="text-white">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
-          {/* Column 1: Logo + Tagline */}
+    <footer style={{ backgroundColor: "#0F2D5E", color: "#ffffff" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "48px 24px" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            gap: 40,
+          }}
+        >
+          {/* Column 1 */}
           <div>
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-6 w-6" style={{ color: "#F5A623" }} />
-              <span
-                className="text-lg font-bold"
-                style={{ fontFamily: "Inter, sans-serif" }}
-              >
-                My Spark SGO
-              </span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Sparkles style={{ width: 24, height: 24, color: "#F5A623" }} />
+              <span style={{ fontSize: 18, fontWeight: 700 }}>My Spark SGO</span>
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-gray-300">
+            <p
+              style={{
+                marginTop: 16,
+                fontSize: 14,
+                lineHeight: 1.7,
+                color: "rgba(255,255,255,0.7)",
+              }}
+            >
               Connecting families to out-of-school opportunities — powered by
               scholarship funding.
             </p>
-            {/* Social icons */}
-            <div className="mt-6 flex gap-3">
-              {socialLinks.map(({ Icon, label, href }) => (
+            <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
+              {socialLinks.map(({ Icon, label }) => (
                 <a
                   key={label}
-                  href={href}
+                  href="#"
                   aria-label={label}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20"
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#ffffff",
+                    textDecoration: "none",
+                  }}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon style={{ width: 16, height: 16 }} />
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Column 2: Quick Links */}
+          {/* Column 2 */}
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-300">
+            <h3
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: "rgba(255,255,255,0.6)",
+                marginBottom: 16,
+              }}
+            >
               Quick Links
             </h3>
-            <ul className="mt-4 space-y-2">
+            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
               {quickLinks.map((link) => (
-                <li key={link.to}>
+                <li key={link.to} style={{ marginBottom: 8 }}>
                   <Link
                     to={link.to}
-                    className="text-sm text-gray-300 transition-colors hover:text-white"
+                    style={{
+                      fontSize: 14,
+                      color: "rgba(255,255,255,0.7)",
+                      textDecoration: "none",
+                    }}
                   >
                     {link.label}
                   </Link>
@@ -79,33 +100,68 @@ function Footer() {
             </ul>
           </div>
 
-          {/* Column 3: Contact Info */}
+          {/* Column 3 */}
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-300">
+            <h3
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: "rgba(255,255,255,0.6)",
+                marginBottom: 16,
+              }}
+            >
               Contact Info
             </h3>
-            <ul className="mt-4 space-y-3">
-              <li className="flex items-center gap-2 text-sm text-gray-300">
-                <Mail className="h-4 w-4 flex-shrink-0" />
+            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+              <li
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 12,
+                  fontSize: 14,
+                  color: "rgba(255,255,255,0.7)",
+                }}
+              >
+                <Mail style={{ width: 16, height: 16, flexShrink: 0 }} />
                 <a
                   href="mailto:support@mysparkdenver.org"
-                  className="transition-colors hover:text-white"
+                  style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none" }}
                 >
                   support@mysparkdenver.org
                 </a>
               </li>
-              <li className="flex items-center gap-2 text-sm text-gray-300">
-                <Phone className="h-4 w-4 flex-shrink-0" />
+              <li
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 12,
+                  fontSize: 14,
+                  color: "rgba(255,255,255,0.7)",
+                }}
+              >
+                <Phone style={{ width: 16, height: 16, flexShrink: 0 }} />
                 <a
                   href="tel:720-807-0200"
-                  className="transition-colors hover:text-white"
+                  style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none" }}
                 >
                   720-807-0200
                 </a>
               </li>
-              <li className="flex items-center gap-2 text-sm text-gray-300">
-                <MapPin className="h-4 w-4 flex-shrink-0" />
-                <span>Denver, CO</span>
+              <li
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 14,
+                  color: "rgba(255,255,255,0.7)",
+                }}
+              >
+                <MapPin style={{ width: 16, height: 16, flexShrink: 0 }} />
+                Denver, CO
               </li>
             </ul>
           </div>
@@ -113,14 +169,33 @@ function Footer() {
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-4 text-xs text-gray-400 sm:flex-row sm:px-6 lg:px-8">
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+        <div
+          style={{
+            maxWidth: 1200,
+            margin: "0 auto",
+            padding: "16px 24px",
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 12,
+            color: "rgba(255,255,255,0.5)",
+          }}
+        >
           <span>&copy; 2026 My Spark SGO. All rights reserved.</span>
-          <div className="flex gap-4">
-            <Link to="/privacy" className="transition-colors hover:text-white">
+          <div style={{ display: "flex", gap: 16 }}>
+            <Link
+              to="/privacy"
+              style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}
+            >
               Privacy Policy
             </Link>
-            <Link to="/terms" className="transition-colors hover:text-white">
+            <Link
+              to="/terms"
+              style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}
+            >
               Terms of Service
             </Link>
           </div>

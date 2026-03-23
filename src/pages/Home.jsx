@@ -7,21 +7,13 @@ import {
   CheckCircle,
   CreditCard,
   GraduationCap,
-  ChevronRight,
+  ArrowRight,
   Star,
   Sparkles,
+  ChevronDown,
 } from "lucide-react";
+import { useState } from "react";
 import Layout from "@/components/Layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "@/components/ui/accordion";
-
-/* ─── data ──────────────────────────────────────────────────────── */
 
 const features = [
   {
@@ -48,22 +40,26 @@ const steps = [
   {
     icon: FileText,
     title: "Apply",
-    description: "Complete the online application with basic household and student information.",
+    description:
+      "Complete the online application with basic household and student information.",
   },
   {
     icon: CheckCircle,
     title: "Get Approved",
-    description: "Our team reviews your application and verifies eligibility within a few business days.",
+    description:
+      "Our team reviews your application and verifies eligibility within a few business days.",
   },
   {
     icon: CreditCard,
     title: "Activate Your Card",
-    description: "Receive your virtual Chek card loaded with scholarship funds, ready to use.",
+    description:
+      "Receive your virtual Chek card loaded with scholarship funds, ready to use.",
   },
   {
     icon: GraduationCap,
     title: "Start Enrolling",
-    description: "Browse approved providers and enroll your child in the activities they love.",
+    description:
+      "Browse approved providers and enroll your child in the activities they love.",
   },
 ];
 
@@ -73,21 +69,18 @@ const testimonials = [
       "My Spark SGO made it possible for my daughter to join a competitive swim team. We never could have afforded the fees on our own. She's thriving and more confident than ever.",
     name: "Maria G.",
     role: "Parent, Denver",
-    stars: 5,
   },
   {
     quote:
       "The application was so easy — I finished it during my lunch break. Within a week we had funding on the card and my son was signed up for guitar lessons. This program is a game-changer.",
     name: "James T.",
     role: "Parent, Aurora",
-    stars: 5,
   },
   {
     quote:
       "As a single mom of three, extracurriculars always felt out of reach. Now all three of my kids are in after-school programs they love. I'm so grateful for this scholarship.",
     name: "Priya S.",
     role: "Parent, Colorado Springs",
-    stars: 5,
   },
 ];
 
@@ -95,162 +88,356 @@ const faqs = [
   {
     question: "Who is eligible for the My Spark SGO scholarship?",
     answer:
-      "Eligibility is based on household income and residency. Families must reside in Colorado and have a household income at or below 185% of the federal poverty level. Students must be between the ages of 5 and 18 and attending a qualifying school or homeschool program. Our application will walk you through the specific requirements.",
+      "Eligibility is based on household income and residency. Families must reside in Colorado and have a household income at or below 185% of the federal poverty level. Students must be between the ages of 5 and 18 and attending a qualifying school or homeschool program.",
   },
   {
     question: "How much funding can my family receive?",
     answer:
-      "Each eligible student can receive up to $1,000 per scholarship year. Families with multiple eligible children may apply for each child individually. The exact award amount is determined during the approval process based on available funding and demonstrated need.",
+      "Each eligible student can receive up to $1,000 per scholarship year. Families with multiple eligible children may apply for each child individually.",
   },
   {
     question: "What activities and programs are covered?",
     answer:
-      "Scholarship funds can be used for a wide range of enrichment activities including organized sports, music and art lessons, academic tutoring, STEM programs, dance classes, martial arts, theater, language courses, and more. The activity must be offered by an approved provider in our network.",
+      "Scholarship funds can be used for organized sports, music and art lessons, academic tutoring, STEM programs, dance classes, martial arts, theater, language courses, and more. The activity must be offered by an approved provider.",
   },
   {
     question: "How does the Chek virtual card work?",
     answer:
-      "Once approved, you'll receive a virtual Chek card that works like a prepaid debit card. It's loaded with your scholarship funds and can be used to pay approved providers directly. You can manage your card, check your balance, and view transactions through your My Spark SGO dashboard.",
+      "Once approved, you'll receive a virtual Chek card that works like a prepaid debit card. It's loaded with your scholarship funds and can be used to pay approved providers directly.",
   },
   {
     question: "How long does the application process take?",
     answer:
-      "Most families complete the online application in under 10 minutes. After submission, our team typically reviews and processes applications within 3–5 business days. You'll receive email notifications at each stage so you always know where things stand.",
+      "Most families complete the online application in under 10 minutes. After submission, our team typically reviews applications within 3-5 business days.",
   },
   {
     question: "Can I apply for more than one child?",
     answer:
-      "Yes! You can submit a separate application for each eligible child in your household. Each child may qualify for up to $1,000 in scholarship funding. You'll use the same parent account to manage all applications from your family dashboard.",
+      "Yes! You can submit a separate application for each eligible child in your household. Each child may qualify for up to $1,000 in scholarship funding.",
   },
   {
     question: "When do scholarship funds expire?",
     answer:
-      "Scholarship funds are valid for the current program year, which typically runs from August through July. Any unused funds at the end of the program year do not roll over. We encourage families to plan ahead and take full advantage of their award.",
+      "Scholarship funds are valid for the current program year, which typically runs from August through July. Any unused funds do not roll over.",
   },
   {
     question: "How do I find approved providers near me?",
     answer:
-      "Our Provider Directory lets you search by location, activity type, and age group. You can browse the full list of approved providers from your dashboard or visit the Providers page on our website. New providers are added regularly, so check back often.",
+      "Our Provider Directory lets you search by location, activity type, and age group. You can browse the full list from your dashboard. New providers are added regularly.",
   },
 ];
 
-/* ─── component ─────────────────────────────────────────────────── */
+function FaqItem({ question, answer }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ borderBottom: "1px solid #e5e7eb" }}>
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "20px 0",
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          textAlign: "left",
+          fontSize: "16px",
+          fontWeight: 500,
+          color: "#0F2D5E",
+          fontFamily: "inherit",
+        }}
+      >
+        {question}
+        <ChevronDown
+          style={{
+            width: 20,
+            height: 20,
+            flexShrink: 0,
+            marginLeft: 16,
+            transform: open ? "rotate(180deg)" : "rotate(0)",
+            transition: "transform 0.2s",
+            color: "#6b7280",
+          }}
+        />
+      </button>
+      {open && (
+        <div
+          style={{
+            paddingBottom: 20,
+            fontSize: "14px",
+            lineHeight: 1.7,
+            color: "#4b5563",
+          }}
+        >
+          {answer}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function Home() {
   return (
     <Layout>
-      {/* ── HERO ──────────────────────────────────────────────── */}
+      {/* HERO */}
       <section
-        className="relative overflow-hidden"
         style={{
-          background: "linear-gradient(135deg, #0F2D5E 0%, #1a3f7a 50%, #153470 100%)",
+          background:
+            "linear-gradient(135deg, #0F2D5E 0%, #1a3f7a 50%, #153470 100%)",
+          position: "relative",
+          overflow: "hidden",
         }}
       >
-        {/* decorative sparkles */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <Sparkles className="absolute left-[10%] top-[15%] h-6 w-6 text-white/10 animate-pulse" />
-          <Sparkles className="absolute right-[15%] top-[25%] h-8 w-8 text-[#F5A623]/20 animate-pulse delay-300" />
-          <Sparkles className="absolute left-[25%] bottom-[20%] h-5 w-5 text-white/10 animate-pulse delay-700" />
-          <Sparkles className="absolute right-[30%] bottom-[30%] h-7 w-7 text-[#F5A623]/15 animate-pulse delay-500" />
-          <Sparkles className="absolute left-[60%] top-[10%] h-4 w-4 text-white/10 animate-pulse delay-200" />
-          <Sparkles className="absolute right-[8%] bottom-[15%] h-6 w-6 text-white/10 animate-pulse delay-1000" />
-          {/* subtle dot pattern overlay */}
-          <div
-            className="absolute inset-0 opacity-[0.03]"
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            opacity: 0.03,
+            backgroundImage:
+              "radial-gradient(circle, #ffffff 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}
+        />
+        <div
+          style={{
+            position: "relative",
+            maxWidth: 900,
+            margin: "0 auto",
+            padding: "96px 24px",
+            textAlign: "center",
+          }}
+        >
+          <h1
             style={{
-              backgroundImage:
-                "radial-gradient(circle, #ffffff 1px, transparent 1px)",
-              backgroundSize: "32px 32px",
+              fontSize: "clamp(32px, 5vw, 56px)",
+              fontWeight: 800,
+              lineHeight: 1.1,
+              color: "#ffffff",
+              letterSpacing: "-0.02em",
+              margin: 0,
             }}
-          />
-        </div>
-
-        <div className="relative mx-auto max-w-4xl px-6 py-28 text-center lg:py-36">
-          <h1 className="animate-fade-in text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
+          >
             Unlock Your Child's Potential — Outside the Classroom.
           </h1>
-          <p className="animate-fade-in mx-auto mt-6 max-w-2xl text-lg text-white/80 sm:text-xl">
+          <p
+            style={{
+              fontSize: "clamp(16px, 2.5vw, 20px)",
+              color: "rgba(255,255,255,0.8)",
+              maxWidth: 600,
+              margin: "24px auto 0",
+              lineHeight: 1.6,
+            }}
+          >
             My Spark SGO connects eligible families with scholarship funding for
             sports, arts, tutoring, and more.
           </p>
-          <div className="animate-slide-up mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button
-              asChild
-              size="lg"
-              className="bg-[#F5A623] text-[#0F2D5E] font-semibold hover:bg-[#F5A623]/90 px-8 py-3 text-base"
+          <div
+            style={{
+              display: "flex",
+              gap: 16,
+              justifyContent: "center",
+              marginTop: 40,
+              flexWrap: "wrap",
+            }}
+          >
+            <Link
+              to="/apply/family"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "14px 32px",
+                borderRadius: 8,
+                backgroundColor: "#F5A623",
+                color: "#0F2D5E",
+                fontWeight: 600,
+                fontSize: 16,
+                textDecoration: "none",
+                transition: "opacity 0.2s",
+              }}
             >
-              <Link to="/apply/family">Apply as a Family</Link>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              className="border-2 border-white bg-transparent text-white hover:bg-white/10 px-8 py-3 text-base"
+              Apply as a Family
+            </Link>
+            <Link
+              to="/apply/provider"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "14px 32px",
+                borderRadius: 8,
+                backgroundColor: "transparent",
+                color: "#ffffff",
+                fontWeight: 600,
+                fontSize: 16,
+                textDecoration: "none",
+                border: "2px solid rgba(255,255,255,0.8)",
+                transition: "background 0.2s",
+              }}
             >
-              <Link to="/apply/provider">Become a Provider</Link>
-            </Button>
+              Become a Provider
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* ── FEATURE CALLOUT CARDS ─────────────────────────────── */}
-      <section className="bg-gray-50 py-20">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="grid gap-8 md:grid-cols-3">
+      {/* FEATURE CARDS */}
+      <section style={{ backgroundColor: "#f9fafb", padding: "80px 24px" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+              gap: 32,
+            }}
+          >
             {features.map((f, i) => (
-              <Card
+              <div
                 key={i}
-                className="animate-slide-up border-0 bg-white shadow-md hover:shadow-lg transition-shadow"
+                style={{
+                  backgroundColor: "#ffffff",
+                  borderRadius: 12,
+                  padding: 32,
+                  textAlign: "center",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)",
+                }}
               >
-                <CardHeader className="items-center text-center">
-                  <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[#F5A623]/10">
-                    <f.icon className="h-7 w-7 text-[#F5A623]" />
-                  </div>
-                  <CardTitle className="text-lg text-[#0F2D5E]">
-                    {f.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-center text-sm text-gray-600 leading-relaxed">
+                <div
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: "50%",
+                    backgroundColor: "rgba(245,166,35,0.1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    margin: "0 auto 16px",
+                  }}
+                >
+                  <f.icon style={{ width: 28, height: 28, color: "#F5A623" }} />
+                </div>
+                <h3
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 600,
+                    color: "#0F2D5E",
+                    margin: "0 0 12px",
+                  }}
+                >
+                  {f.title}
+                </h3>
+                <p
+                  style={{
+                    fontSize: 14,
+                    lineHeight: 1.7,
+                    color: "#4b5563",
+                    margin: 0,
+                  }}
+                >
                   {f.description}
-                </CardContent>
-              </Card>
+                </p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ──────────────────────────────────────── */}
-      <section className="py-20">
-        <div className="mx-auto max-w-6xl px-6">
-          <h2 className="animate-fade-in mb-16 text-center text-3xl font-bold text-[#0F2D5E] sm:text-4xl">
+      {/* HOW IT WORKS */}
+      <section style={{ padding: "80px 24px" }}>
+        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+          <h2
+            style={{
+              textAlign: "center",
+              fontSize: "clamp(28px, 4vw, 36px)",
+              fontWeight: 700,
+              color: "#0F2D5E",
+              marginBottom: 56,
+            }}
+          >
             How It Works
           </h2>
-
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-7 md:gap-0 items-start">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              gap: 32,
+            }}
+          >
             {steps.map((s, i) => (
-              <div key={i} className="contents">
-                {/* step card */}
-                <div className="animate-slide-up flex flex-col items-center text-center md:col-span-1">
-                  {/* numbered circle */}
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0F2D5E] text-lg font-bold text-white">
-                    {i + 1}
-                  </div>
-                  {/* icon */}
-                  <div className="mt-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[#F5A623]/10">
-                    <s.icon className="h-6 w-6 text-[#F5A623]" />
-                  </div>
-                  {/* text */}
-                  <h3 className="mt-4 text-lg font-semibold text-[#0F2D5E]">
-                    {s.title}
-                  </h3>
-                  <p className="mt-2 max-w-[180px] text-sm text-gray-600 leading-relaxed">
-                    {s.description}
-                  </p>
+              <div
+                key={i}
+                style={{
+                  textAlign: "center",
+                  position: "relative",
+                }}
+              >
+                {/* Step number */}
+                <div
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: "50%",
+                    backgroundColor: "#0F2D5E",
+                    color: "#ffffff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 18,
+                    fontWeight: 700,
+                    margin: "0 auto 16px",
+                  }}
+                >
+                  {i + 1}
                 </div>
-
-                {/* arrow between steps (hidden on mobile & after last step) */}
+                {/* Icon */}
+                <div
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 12,
+                    backgroundColor: "rgba(245,166,35,0.1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    margin: "0 auto 16px",
+                  }}
+                >
+                  <s.icon style={{ width: 24, height: 24, color: "#F5A623" }} />
+                </div>
+                <h3
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 600,
+                    color: "#0F2D5E",
+                    margin: "0 0 8px",
+                  }}
+                >
+                  {s.title}
+                </h3>
+                <p
+                  style={{
+                    fontSize: 14,
+                    lineHeight: 1.6,
+                    color: "#4b5563",
+                    maxWidth: 220,
+                    margin: "0 auto",
+                  }}
+                >
+                  {s.description}
+                </p>
+                {/* Arrow (hidden on last step) */}
                 {i < steps.length - 1 && (
-                  <div className="hidden md:flex md:col-span-1 items-center justify-center pt-5">
-                    <ChevronRight className="h-6 w-6 text-gray-300" />
+                  <div
+                    className="hidden lg:block"
+                    style={{
+                      position: "absolute",
+                      right: -20,
+                      top: 24,
+                    }}
+                  >
+                    <ArrowRight
+                      style={{ width: 20, height: 20, color: "#d1d5db" }}
+                    />
                   </div>
                 )}
               </div>
@@ -259,84 +446,151 @@ function Home() {
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ──────────────────────────────────────── */}
-      <section className="bg-gray-50 py-20">
-        <div className="mx-auto max-w-6xl px-6">
-          <h2 className="animate-fade-in mb-14 text-center text-3xl font-bold text-[#0F2D5E] sm:text-4xl">
+      {/* TESTIMONIALS */}
+      <section style={{ backgroundColor: "#f9fafb", padding: "80px 24px" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <h2
+            style={{
+              textAlign: "center",
+              fontSize: "clamp(28px, 4vw, 36px)",
+              fontWeight: 700,
+              color: "#0F2D5E",
+              marginBottom: 48,
+            }}
+          >
             What Families Are Saying
           </h2>
-
-          <div className="grid gap-8 md:grid-cols-3">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+              gap: 32,
+            }}
+          >
             {testimonials.map((t, i) => (
-              <Card
+              <div
                 key={i}
-                className="animate-slide-up border-0 bg-white shadow-sm"
+                style={{
+                  backgroundColor: "#ffffff",
+                  borderRadius: 12,
+                  padding: 32,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                }}
               >
-                <CardContent className="pt-6">
-                  {/* stars */}
-                  <div className="mb-4 flex gap-1">
-                    {Array.from({ length: t.stars }).map((_, j) => (
-                      <Star
-                        key={j}
-                        className="h-4 w-4 fill-[#F5A623] text-[#F5A623]"
-                      />
-                    ))}
-                  </div>
-                  {/* quote */}
-                  <p className="text-sm leading-relaxed text-gray-700 italic">
-                    "{t.quote}"
+                <div style={{ display: "flex", gap: 4, marginBottom: 16 }}>
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star
+                      key={s}
+                      style={{
+                        width: 16,
+                        height: 16,
+                        fill: "#F5A623",
+                        color: "#F5A623",
+                      }}
+                    />
+                  ))}
+                </div>
+                <p
+                  style={{
+                    fontSize: 14,
+                    lineHeight: 1.7,
+                    color: "#374151",
+                    fontStyle: "italic",
+                    margin: "0 0 24px",
+                  }}
+                >
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+                <div
+                  style={{
+                    borderTop: "1px solid #e5e7eb",
+                    paddingTop: 16,
+                  }}
+                >
+                  <p
+                    style={{
+                      fontWeight: 600,
+                      color: "#0F2D5E",
+                      fontSize: 14,
+                      margin: 0,
+                    }}
+                  >
+                    {t.name}
                   </p>
-                  {/* attribution */}
-                  <div className="mt-6 border-t pt-4">
-                    <p className="font-semibold text-[#0F2D5E]">{t.name}</p>
-                    <p className="text-xs text-gray-500">{t.role}</p>
-                  </div>
-                </CardContent>
-              </Card>
+                  <p
+                    style={{ fontSize: 12, color: "#6b7280", margin: "4px 0 0" }}
+                  >
+                    {t.role}
+                  </p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── FAQ ────────────────────────────────────────────────── */}
-      <section className="py-20">
-        <div className="mx-auto max-w-3xl px-6">
-          <h2 className="animate-fade-in mb-12 text-center text-3xl font-bold text-[#0F2D5E] sm:text-4xl">
+      {/* FAQ */}
+      <section style={{ padding: "80px 24px" }}>
+        <div style={{ maxWidth: 720, margin: "0 auto" }}>
+          <h2
+            style={{
+              textAlign: "center",
+              fontSize: "clamp(28px, 4vw, 36px)",
+              fontWeight: 700,
+              color: "#0F2D5E",
+              marginBottom: 40,
+            }}
+          >
             Frequently Asked Questions
           </h2>
-
-          <Accordion type="single" collapsible className="animate-slide-up">
+          <div>
             {faqs.map((f, i) => (
-              <AccordionItem key={i} value={`faq-${i}`}>
-                <AccordionTrigger className="text-left text-[#0F2D5E] font-medium text-base hover:no-underline">
-                  {f.question}
-                </AccordionTrigger>
-                <AccordionContent className="text-gray-600 leading-relaxed">
-                  {f.answer}
-                </AccordionContent>
-              </AccordionItem>
+              <FaqItem key={i} question={f.question} answer={f.answer} />
             ))}
-          </Accordion>
+          </div>
         </div>
       </section>
 
-      {/* ── CTA BANNER ────────────────────────────────────────── */}
-      <section className="bg-[#F5A623]">
-        <div className="mx-auto max-w-4xl px-6 py-16 text-center">
-          <h2 className="animate-fade-in text-3xl font-bold text-[#0F2D5E] sm:text-4xl">
+      {/* CTA BANNER */}
+      <section style={{ backgroundColor: "#F5A623", padding: "64px 24px" }}>
+        <div style={{ maxWidth: 700, margin: "0 auto", textAlign: "center" }}>
+          <h2
+            style={{
+              fontSize: "clamp(28px, 4vw, 36px)",
+              fontWeight: 700,
+              color: "#0F2D5E",
+              margin: "0 0 16px",
+            }}
+          >
             Ready to Get Started?
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-[#0F2D5E]/80 text-lg">
+          <p
+            style={{
+              fontSize: 18,
+              color: "rgba(15,45,94,0.8)",
+              margin: "0 0 32px",
+              lineHeight: 1.6,
+            }}
+          >
             Apply today and give your child access to the enrichment programs
             they deserve. It only takes a few minutes.
           </p>
-          <Button
-            asChild
-            size="lg"
-            className="animate-slide-up mt-8 bg-[#0F2D5E] text-white hover:bg-[#0F2D5E]/90 px-10 py-3 text-base font-semibold"
+          <Link
+            to="/apply/family"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "14px 40px",
+              borderRadius: 8,
+              backgroundColor: "#0F2D5E",
+              color: "#ffffff",
+              fontWeight: 600,
+              fontSize: 16,
+              textDecoration: "none",
+            }}
           >
-            <Link to="/apply/family">Apply Now</Link>
-          </Button>
+            Apply Now
+          </Link>
         </div>
       </section>
     </Layout>
