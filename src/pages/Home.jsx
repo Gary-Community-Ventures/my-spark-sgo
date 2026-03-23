@@ -24,7 +24,7 @@ const features = [
   },
   {
     icon: MapPin,
-    title: "100+ Approved Providers",
+    title: "500+ Approved Providers Statewide",
     description:
       "Choose from a growing network of vetted sports leagues, arts studios, tutoring centers, and enrichment programs across Colorado.",
   },
