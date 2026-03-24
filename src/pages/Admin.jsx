@@ -40,6 +40,9 @@ import {
   GraduationCap,
   Pencil,
   Power,
+  Star,
+  Mail,
+  MessageSquare,
 } from "lucide-react";
 import familyApplications from "@/data/familyApplications";
 import providerApplications from "@/data/providerApplications";
@@ -555,6 +558,8 @@ function Admin() {
             <TabsTrigger value="reviews">Review Intelligence</TabsTrigger>
             <TabsTrigger value="benchmarking">Benchmarking</TabsTrigger>
             <TabsTrigger value="subsidies">Subsidy Programs</TabsTrigger>
+            <TabsTrigger value="moderation">Review Moderation</TabsTrigger>
+            <TabsTrigger value="communications">Communications</TabsTrigger>
           </TabsList>
 
           {/* ---- AI Review Queue ---- */}
@@ -1199,6 +1204,144 @@ function Admin() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ---- Review Moderation ---- */}
+          <TabsContent value="moderation">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl" style={{ color: "#0F2D5E" }}>
+                  <ShieldAlert className="h-5 w-5" />
+                  Review Moderation
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div style={{ display: "flex", gap: 16, marginBottom: 24, flexWrap: "wrap" }}>
+                  <div style={{ padding: "12px 20px", borderRadius: 8, backgroundColor: "rgba(46,125,50,0.08)", border: "1px solid #2E7D32" }}>
+                    <span style={{ fontSize: 24, fontWeight: 700, color: "#2E7D32" }}>96%</span>
+                    <span style={{ fontSize: 13, color: "#4b5563", marginLeft: 8 }}>auto-approved this month</span>
+                  </div>
+                  <div style={{ padding: "12px 20px", borderRadius: 8, backgroundColor: "rgba(245,166,35,0.08)", border: "1px solid #F5A623" }}>
+                    <span style={{ fontSize: 24, fontWeight: 700, color: "#F5A623" }}>1</span>
+                    <span style={{ fontSize: 13, color: "#4b5563", marginLeft: 8 }}>review needs human moderation</span>
+                  </div>
+                </div>
+
+                <p style={{ fontSize: 14, color: "#6b7280", marginBottom: 20 }}>
+                  AI automatically screens all submitted reviews for inappropriate language, personally identifiable information, safety concerns, and suspicious content. Only flagged reviews appear here.
+                </p>
+
+                {/* Flagged review */}
+                <div style={{ border: "1px solid #fca5a5", borderRadius: 12, padding: 20, backgroundColor: "#fef2f2", marginBottom: 16 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+                    <div>
+                      <Badge className="border-0 bg-red-100 text-red-700" style={{ marginBottom: 8 }}>Needs Human Review</Badge>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: "#0F2D5E" }}>Review for Rocky Mountain Martial Arts</p>
+                      <p style={{ fontSize: 13, color: "#6b7280" }}>Submitted: Mar 21, 2026 — Parent of a 6th grader</p>
+                    </div>
+                    <div style={{ display: "flex", gap: 4 }}>
+                      {[1,2,3].map(s => (
+                        <Star key={s} style={{ width: 14, height: 14, fill: "#F5A623", color: "#F5A623" }} />
+                      ))}
+                      {[4,5].map(s => (
+                        <Star key={s} style={{ width: 14, height: 14, color: "#d1d5db" }} />
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ backgroundColor: "white", borderRadius: 8, padding: 14, marginBottom: 12, border: "1px solid #e5e7eb" }}>
+                    <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.6 }}>
+                      "The class was okay but my son's friend Tommy Rodriguez in the Tuesday 4pm class said the instructor yelled at him last week. I'm concerned about how they handle discipline. My son seems fine but I wanted to mention it."
+                    </p>
+                  </div>
+                  <div style={{ backgroundColor: "rgba(245,166,35,0.08)", borderRadius: 8, padding: 12, marginBottom: 16, border: "1px solid #F5A623" }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "#0F2D5E", marginBottom: 4 }}>AI Reason for Flagging:</p>
+                    <p style={{ fontSize: 13, color: "#4b5563" }}>Review contains potentially identifying information about another child (name "Tommy Rodriguez" and specific class time). Also contains a secondhand report of instructor behavior that may warrant follow-up.</p>
+                  </div>
+                  <div style={{ display: "flex", gap: 12 }}>
+                    <Button
+                      onClick={() => alert("Review approved — identifying information will be redacted before publishing.")}
+                      style={{ backgroundColor: "#2E7D32", color: "white" }}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Approve (with edits)
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => alert("Review rejected. Family will be notified with an invitation to resubmit without identifying information.")}
+                      style={{ borderColor: "#D32F2F", color: "#D32F2F" }}
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                </div>
+
+                <div style={{ textAlign: "center", padding: "32px 0", color: "#9ca3af" }}>
+                  <CheckCircle style={{ width: 32, height: 32, margin: "0 auto 8px", color: "#2E7D32" }} />
+                  <p style={{ fontSize: 14 }}>All other reviews have been auto-approved by AI</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ---- Communications ---- */}
+          <TabsContent value="communications">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl" style={{ color: "#0F2D5E" }}>
+                  <Mail className="h-5 w-5" />
+                  Automated Review Request Templates
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p style={{ fontSize: 14, color: "#6b7280", marginBottom: 24 }}>
+                  These templates are sent automatically 48 hours after a transaction is recorded. They can be customized below.
+                </p>
+
+                {/* Email Template */}
+                <div style={{ marginBottom: 32 }}>
+                  <h4 style={{ fontSize: 16, fontWeight: 600, color: "#0F2D5E", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
+                    <Mail style={{ width: 18, height: 18 }} />
+                    Email Template
+                  </h4>
+                  <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, overflow: "hidden" }}>
+                    <div style={{ backgroundColor: "#0F2D5E", padding: "16px 20px", color: "white" }}>
+                      <p style={{ fontSize: 12, opacity: 0.7, marginBottom: 4 }}>From: My Spark SGO &lt;noreply@mysparkdenver.org&gt;</p>
+                      <p style={{ fontSize: 12, opacity: 0.7, marginBottom: 4 }}>To: {'{{parent_email}}'}</p>
+                      <p style={{ fontSize: 14, fontWeight: 600 }}>Subject: How did {'{{student_name}}'}'s session at {'{{provider_name}}'} go?</p>
+                    </div>
+                    <div style={{ padding: 24, fontSize: 14, lineHeight: 1.8, color: "#374151" }}>
+                      <p>Hi {'{{parent_first_name}}'},</p>
+                      <p style={{ marginTop: 12 }}>We hope {'{{student_name}}'} enjoyed their recent session at <strong>{'{{provider_name}}'}</strong>! Your feedback helps other My Spark families find the best programs for their kids.</p>
+                      <p style={{ marginTop: 12 }}>It only takes 60 seconds — how would you rate the experience?</p>
+                      <div style={{ display: "flex", gap: 8, justifyContent: "center", margin: "20px 0" }}>
+                        {[1,2,3,4,5].map(s => (
+                          <div key={s} style={{ width: 48, height: 48, borderRadius: "50%", border: "2px solid #F5A623", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, cursor: "pointer" }}>
+                            {'⭐'}
+                          </div>
+                        ))}
+                      </div>
+                      <p style={{ textAlign: "center", fontSize: 13, color: "#6b7280" }}>Tap a star to start your review</p>
+                      <p style={{ marginTop: 16 }}>Thank you for being part of the My Spark community!</p>
+                      <p style={{ marginTop: 8 }}>— The My Spark SGO Team</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SMS Template */}
+                <div>
+                  <h4 style={{ fontSize: 16, fontWeight: 600, color: "#0F2D5E", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
+                    <MessageSquare style={{ width: 18, height: 18 }} />
+                    SMS Template
+                  </h4>
+                  <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 20, backgroundColor: "#f9fafb" }}>
+                    <div style={{ maxWidth: 320, backgroundColor: "#0F2D5E", borderRadius: "16px 16px 16px 4px", padding: "12px 16px", color: "white", fontSize: 14, lineHeight: 1.6 }}>
+                      Hi {'{{parent_first_name}}'} — how did {'{{student_name}}'}'s session at {'{{provider_name}}'} go? Share a quick review to help other families: {'{{review_link}}'} 🌟
+                    </div>
+                    <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 8 }}>Sent 48 hours after transaction • 156 characters</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>

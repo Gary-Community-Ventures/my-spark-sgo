@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
+import ReviewForm from "@/components/ReviewForm";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -101,6 +102,10 @@ function FamilyDashboard() {
   const [selComplete, setSelComplete] = useState(false);
   const [showSubsidyFinder, setShowSubsidyFinder] = useState(false);
   const [flaggedSubsidies, setFlaggedSubsidies] = useState([]);
+  const [showReviewForm, setShowReviewForm] = useState(null);
+  const [nudgeDismissed, setNudgeDismissed] = useState(false);
+  const [reviewedTransactions, setReviewedTransactions] = useState(new Set());
+  const [reviewFilterStars, setReviewFilterStars] = useState("all");
   const [newStudent, setNewStudent] = useState({
     firstName: "",
     lastName: "",
@@ -178,6 +183,15 @@ function FamilyDashboard() {
         reasons.push("close to home");
       }
 
+      // Review-based scoring: higher ratings get bonus
+      if (provider.rating) {
+        score += 5 * provider.rating;
+      }
+      // More reviews = more trusted (capped at +5)
+      if (provider.reviewCount) {
+        score += Math.min(Math.floor(provider.reviewCount / 10), 5);
+      }
+
       // Random bonus for variety (seeded by provider id for consistency)
       const seed = provider.id.charCodeAt(provider.id.length - 1);
       score += (seed % 11);
@@ -230,11 +244,26 @@ function FamilyDashboard() {
 
   // Provider detail review helpers
   const getProviderReviews = (providerId) => {
-    const provReviews = reviews[providerId] || [];
+    let provReviews = reviews[providerId] || [];
+
+    // Filter by stars
+    if (reviewFilterStars === "5") {
+      provReviews = provReviews.filter((r) => r.rating === 5);
+    } else if (reviewFilterStars === "4") {
+      provReviews = provReviews.filter((r) => r.rating === 4);
+    } else if (reviewFilterStars === "3below") {
+      provReviews = provReviews.filter((r) => r.rating <= 3);
+    }
+
+    // Sort
     if (reviewSort === "highest") {
       return [...provReviews].sort((a, b) => b.rating - a.rating);
+    } else if (reviewSort === "lowest") {
+      return [...provReviews].sort((a, b) => a.rating - b.rating);
+    } else if (reviewSort === "helpful") {
+      return [...provReviews].sort((a, b) => (b.helpful || 0) - (a.helpful || 0));
     }
-    return provReviews; // already in most recent order
+    return provReviews; // "recent" — already in most recent order
   };
 
   return (
@@ -307,6 +336,37 @@ function FamilyDashboard() {
             </p>
           </div>
         </div>
+
+        {/* ============ POST-SESSION REVIEW NUDGE ============ */}
+        {!nudgeDismissed && student.transactions.some(t => t.status === "Completed" && !reviewedTransactions.has(t.id)) && (() => {
+          const recentTxn = student.transactions.find(t => t.status === "Completed" && !reviewedTransactions.has(t.id));
+          const prov = providers.find(p => p.name === recentTxn.provider);
+          return (
+            <div style={{ border: "1px solid #F5A623", borderLeft: "4px solid #F5A623", borderRadius: 12, padding: "20px 24px", marginBottom: 24, backgroundColor: "rgba(245,166,35,0.04)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 16, fontWeight: 600, color: "#0F2D5E", marginBottom: 4 }}>
+                    How did {student.firstName}'s session at {recentTxn.provider} go?
+                  </p>
+                  <p style={{ fontSize: 14, color: "#6b7280" }}>
+                    It takes 60 seconds and helps other families.
+                  </p>
+                  {/* Inline star rating - tap to open full form */}
+                  <div style={{ display: "flex", gap: 4, marginTop: 12 }}>
+                    {[1,2,3,4,5].map(s => (
+                      <button key={s} onClick={() => setShowReviewForm({ provider: prov, transactionId: recentTxn.id })} style={{ background: "none", border: "none", cursor: "pointer", padding: 2 }}>
+                        <Star style={{ width: 32, height: 32, color: "#F5A623", fill: "none", strokeWidth: 1.5 }} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button onClick={() => setNudgeDismissed(true)} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: 13 }}>
+                  Maybe later
+                </button>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ============ SEL CHECK-IN BANNER ============ */}
         <Card
@@ -797,9 +857,14 @@ function FamilyDashboard() {
                       {rec.rating}
                     </span>
                   </div>
-                  <p className="mb-4 text-sm text-gray-500 italic">
+                  <p className="mb-2 text-sm text-gray-500 italic">
                     {rec.reason}
                   </p>
+                  <div className="mb-4 flex items-center gap-1.5">
+                    <div className="flex">{renderStars(rec.rating, "h-3.5 w-3.5")}</div>
+                    <span className="text-xs font-semibold text-gray-600">{rec.rating}</span>
+                    <span className="text-xs text-gray-400">({rec.reviewCount} reviews)</span>
+                  </div>
                   <Button
                     variant="outline"
                     className="w-full border-[#0F2D5E] text-[#0F2D5E] hover:bg-[#0F2D5E] hover:text-white"
@@ -977,6 +1042,12 @@ function FamilyDashboard() {
                   >
                     Status
                   </th>
+                  <th
+                    className="px-4 py-3 font-semibold"
+                    style={{ color: "#0F2D5E" }}
+                  >
+                    Review
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -1000,6 +1071,26 @@ function FamilyDashboard() {
                       >
                         {txn.status}
                       </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      {reviewedTransactions.has(txn.id) ? (
+                        <span className="flex items-center gap-1 text-xs text-gray-400">
+                          <Star className="h-3.5 w-3.5 fill-[#F5A623] text-[#F5A623]" />
+                          Reviewed
+                        </span>
+                      ) : txn.status === "Completed" ? (
+                        <button
+                          className="rounded-full px-3 py-1 text-xs font-medium text-white"
+                          style={{ backgroundColor: "#F5A623" }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const prov = providers.find(p => p.name === txn.provider);
+                            setShowReviewForm({ provider: prov, transactionId: txn.id });
+                          }}
+                        >
+                          Rate
+                        </button>
+                      ) : null}
                     </td>
                   </tr>
                 ))}
@@ -1034,6 +1125,23 @@ function FamilyDashboard() {
                   >
                     ${txn.amount.toFixed(2)}
                   </p>
+                  {reviewedTransactions.has(txn.id) ? (
+                    <span className="mt-2 flex items-center gap-1 text-xs text-gray-400">
+                      <Star className="h-3.5 w-3.5 fill-[#F5A623] text-[#F5A623]" />
+                      Reviewed
+                    </span>
+                  ) : txn.status === "Completed" ? (
+                    <button
+                      className="mt-2 rounded-full px-3 py-1 text-xs font-medium text-white"
+                      style={{ backgroundColor: "#F5A623" }}
+                      onClick={() => {
+                        const prov = providers.find(p => p.name === txn.provider);
+                        setShowReviewForm({ provider: prov, transactionId: txn.id });
+                      }}
+                    >
+                      Rate
+                    </button>
+                  ) : null}
                 </CardContent>
               </Card>
             ))}
@@ -1422,40 +1530,102 @@ function FamilyDashboard() {
 
               {/* Reviews Section */}
               <div className="mb-6">
-                <div className="mb-4 flex items-center justify-between">
-                  <p
-                    className="text-lg font-semibold"
-                    style={{ color: "#0F2D5E" }}
-                  >
-                    Reviews
-                  </p>
-                  <div className="flex gap-2">
+                <p
+                  className="mb-4 text-lg font-semibold"
+                  style={{ color: "#0F2D5E" }}
+                >
+                  Reviews
+                </p>
+
+                {/* Rating Summary Block */}
+                {(() => {
+                  const allRevs = reviews[selectedProvider.id] || [];
+                  const totalCount = allRevs.length;
+                  const avgRating = totalCount > 0 ? (allRevs.reduce((s, r) => s + r.rating, 0) / totalCount) : 0;
+                  const dist = [5, 4, 3, 2, 1].map(star => ({
+                    star,
+                    count: allRevs.filter(r => r.rating === star).length,
+                  }));
+                  const maxCount = Math.max(...dist.map(d => d.count), 1);
+                  return (
+                    <div className="mb-5 flex flex-col gap-4 rounded-lg bg-gray-50 p-4 sm:flex-row sm:items-center sm:gap-8">
+                      <div className="flex flex-col items-center">
+                        <p className="text-4xl font-bold" style={{ color: "#0F2D5E" }}>
+                          {avgRating.toFixed(1)}
+                        </p>
+                        <div className="my-1 flex">{renderStars(avgRating)}</div>
+                        <p className="text-xs text-gray-400">{totalCount} review{totalCount !== 1 ? "s" : ""}</p>
+                      </div>
+                      <div className="flex flex-1 flex-col gap-1">
+                        {dist.map(({ star, count }) => (
+                          <div key={star} className="flex items-center gap-2 text-xs">
+                            <span className="w-8 text-right text-gray-500">{star} star</span>
+                            <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-200">
+                              <div
+                                className="h-full rounded-full"
+                                style={{ width: `${(count / maxCount) * 100}%`, backgroundColor: "#F5A623" }}
+                              />
+                            </div>
+                            <span className="w-5 text-gray-400">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Sort & Filter Controls */}
+                <div className="mb-4 flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-medium text-gray-500 mr-1">Sort:</span>
+                  {[
+                    { key: "recent", label: "Most Recent" },
+                    { key: "highest", label: "Highest Rated" },
+                    { key: "lowest", label: "Lowest Rated" },
+                    { key: "helpful", label: "Most Helpful" },
+                  ].map(opt => (
                     <button
-                      onClick={() => setReviewSort("recent")}
+                      key={opt.key}
+                      onClick={() => setReviewSort(opt.key)}
                       className="rounded-full px-3 py-1 text-xs font-medium transition-colors"
                       style={{
-                        backgroundColor:
-                          reviewSort === "recent" ? "#0F2D5E" : "#f3f4f6",
-                        color:
-                          reviewSort === "recent" ? "#ffffff" : "#6b7280",
+                        backgroundColor: reviewSort === opt.key ? "#0F2D5E" : "#f3f4f6",
+                        color: reviewSort === opt.key ? "#ffffff" : "#6b7280",
                       }}
                     >
-                      Most Recent
+                      {opt.label}
                     </button>
-                    <button
-                      onClick={() => setReviewSort("highest")}
-                      className="rounded-full px-3 py-1 text-xs font-medium transition-colors"
-                      style={{
-                        backgroundColor:
-                          reviewSort === "highest" ? "#0F2D5E" : "#f3f4f6",
-                        color:
-                          reviewSort === "highest" ? "#ffffff" : "#6b7280",
-                      }}
-                    >
-                      Highest Rated
-                    </button>
-                  </div>
+                  ))}
                 </div>
+                <div className="mb-4 flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-medium text-gray-500 mr-1">Filter:</span>
+                  {[
+                    { key: "all", label: "All Stars" },
+                    { key: "5", label: "5 Stars" },
+                    { key: "4", label: "4 Stars" },
+                    { key: "3below", label: "3 and below" },
+                  ].map(opt => (
+                    <button
+                      key={opt.key}
+                      onClick={() => setReviewFilterStars(opt.key)}
+                      className="rounded-full px-3 py-1 text-xs font-medium transition-colors"
+                      style={{
+                        backgroundColor: reviewFilterStars === opt.key ? "#F5A623" : "#f3f4f6",
+                        color: reviewFilterStars === opt.key ? "#ffffff" : "#6b7280",
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Few reviews encouragement */}
+                {(reviews[selectedProvider.id] || []).length < 3 && (
+                  <div className="mb-4 rounded-lg border border-dashed border-[#F5A623] bg-[#FFFDF7] p-3 text-center">
+                    <p className="text-sm text-gray-600">
+                      Be one of the first families to review this provider — your experience helps the whole community.
+                    </p>
+                  </div>
+                )}
 
                 <div className="space-y-4">
                   {getProviderReviews(selectedProvider.id).map((review) => (
@@ -1468,7 +1638,7 @@ function FamilyDashboard() {
                           {renderStars(review.rating, "h-3.5 w-3.5")}
                         </div>
                       </div>
-                      <div className="mb-2 flex items-center gap-2 text-sm">
+                      <div className="mb-2 flex flex-wrap items-center gap-2 text-sm">
                         <span className="font-medium text-gray-800">
                           {review.reviewerName}
                         </span>
@@ -1480,6 +1650,35 @@ function FamilyDashboard() {
                         <span className="text-gray-400">{review.date}</span>
                       </div>
                       <p className="text-sm text-gray-600">{review.text}</p>
+                      {/* Tags */}
+                      {review.tags && review.tags.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {review.tags.map((tag, idx) => (
+                            <span
+                              key={idx}
+                              className="rounded-full px-2 py-0.5 text-xs font-medium"
+                              style={{ backgroundColor: "rgba(245,166,35,0.12)", color: "#B8860B" }}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {/* Helpful button */}
+                      <div className="mt-2">
+                        <button className="flex items-center gap-1 rounded-full px-2 py-1 text-xs text-gray-500 hover:bg-gray-100">
+                          Helpful? 👍 {review.helpful || 0}
+                        </button>
+                      </div>
+                      {/* Provider Response */}
+                      {review.providerResponse && (
+                        <div className="mt-3 rounded-lg bg-gray-100 p-3">
+                          <p className="mb-1 text-xs font-semibold text-gray-500">
+                            Response from {selectedProvider.name}
+                          </p>
+                          <p className="text-sm text-gray-600">{review.providerResponse}</p>
+                        </div>
+                      )}
                     </div>
                   ))}
                   {getProviderReviews(selectedProvider.id).length === 0 && (
@@ -1489,59 +1688,35 @@ function FamilyDashboard() {
                   )}
                 </div>
 
-                {/* Leave a Review */}
-                {!showLeaveReview ? (
-                  <Button
-                    variant="outline"
-                    className="mt-4 w-full border-[#F5A623] text-[#F5A623] hover:bg-[#F5A623] hover:text-white"
-                    onClick={() => setShowLeaveReview(true)}
-                  >
-                    Leave a Review
-                  </Button>
-                ) : (
-                  <div className="mt-4 rounded-lg border border-gray-200 p-4">
-                    <p
-                      className="mb-3 font-semibold"
-                      style={{ color: "#0F2D5E" }}
-                    >
-                      Write a Review
-                    </p>
-                    <div className="mb-3 flex gap-1">
-                      {renderClickableStars(newReviewRating, setNewReviewRating)}
-                    </div>
-                    <Textarea
-                      className="mb-3"
-                      placeholder="Share your experience..."
-                      value={newReviewText}
-                      onChange={(e) => setNewReviewText(e.target.value)}
-                      rows={3}
-                    />
-                    <p className="mb-3 text-xs text-gray-400 italic">
-                      Reviews are available to families who have completed a
-                      transaction with this provider.
-                    </p>
-                    <div className="flex justify-end gap-2">
+                {/* Share Your Experience / Leave a Review */}
+                {(() => {
+                  const hasTransactions = student.transactions.some(t => t.provider === selectedProvider.name);
+                  if (hasTransactions) {
+                    return (
                       <Button
                         variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setShowLeaveReview(false);
-                          setNewReviewRating(0);
-                          setNewReviewText("");
-                        }}
+                        className="mt-4 w-full border-[#F5A623] text-[#F5A623] hover:bg-[#F5A623] hover:text-white"
+                        onClick={() => setShowReviewForm({ provider: selectedProvider, transactionId: null })}
                       >
-                        Cancel
+                        Share Your Experience
                       </Button>
+                    );
+                  }
+                  return (
+                    <div className="mt-4" title="You'll be able to leave a review after your first session">
                       <Button
-                        size="sm"
-                        className="text-white"
-                        style={{ backgroundColor: "#F5A623" }}
+                        variant="outline"
+                        className="w-full border-gray-300 text-gray-400 cursor-not-allowed"
+                        disabled
                       >
-                        Submit Review
+                        Share Your Experience
                       </Button>
+                      <p className="mt-1 text-center text-xs text-gray-400">
+                        You'll be able to leave a review after your first session
+                      </p>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
 
               {/* Action buttons */}
@@ -1857,6 +2032,22 @@ function FamilyDashboard() {
             </div>
           </div>
         </div>
+      )}
+      {/* ============ REVIEW FORM MODAL ============ */}
+      {showReviewForm && showReviewForm.provider && (
+        <ReviewForm
+          provider={showReviewForm.provider}
+          studentName={student.firstName}
+          studentGrade={student.grade}
+          parentName="Maria"
+          onSubmit={(reviewData) => {
+            // Add to reviewedTransactions
+            if (showReviewForm.transactionId) {
+              setReviewedTransactions(prev => new Set([...prev, showReviewForm.transactionId]));
+            }
+          }}
+          onClose={() => setShowReviewForm(null)}
+        />
       )}
     </Layout>
   );

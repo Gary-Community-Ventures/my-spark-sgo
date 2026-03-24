@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Layout from "@/components/Layout";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,10 @@ import {
   Upload,
   Pencil,
   Star,
+  ThumbsUp,
+  Flag,
+  Send,
+  MessageSquare,
 } from "lucide-react";
 import reviews from "@/data/reviews";
 
@@ -87,14 +92,33 @@ function FilledStars({ count, size = "h-5 w-5" }) {
   );
 }
 
+// Compute attribute averages for prov-001 (Dance: Instructor Quality, Creative Environment, Enthusiasm, Value)
+const attributeKeys = [
+  { key: "instructorQuality", label: "Instructor Quality" },
+  { key: "creativeEnvironment", label: "Creative Environment" },
+  { key: "enthusiasm", label: "Enthusiasm" },
+  { key: "value", label: "Value" },
+];
+const attributeAverages = attributeKeys.map(({ key, label }) => {
+  const scores = providerReviews.filter((r) => r.attributes && r.attributes[key] != null).map((r) => r.attributes[key]);
+  const avg = scores.length > 0 ? scores.reduce((s, v) => s + v, 0) / scores.length : 0;
+  return { label, avg };
+});
+
 function MyReviewsTab() {
+  const [respondingTo, setRespondingTo] = useState(null);
+  const [responseText, setResponseText] = useState("");
+  const [flaggingId, setFlaggingId] = useState(null);
+  const [flagReason, setFlagReason] = useState("");
+  const [requestEmail, setRequestEmail] = useState("");
+
   return (
     <div>
-      {/* Aggregate Summary */}
+      {/* ===== 1. AGGREGATE SUMMARY ===== */}
       <Card className="mb-6">
         <CardContent className="pt-6">
           <div className="grid gap-8 md:grid-cols-3">
-            {/* Average Rating */}
+            {/* Average Rating + Trend */}
             <div className="flex flex-col items-center justify-center text-center">
               <p
                 className="text-5xl font-bold"
@@ -106,6 +130,9 @@ function MyReviewsTab() {
                 <FilledStars count={Math.round(avgRating)} size="h-6 w-6" />
               </div>
               <p className="mt-1 text-sm text-gray-500">Average Rating</p>
+              <p className="mt-1 text-sm font-medium" style={{ color: "#16a34a" }}>
+                ↑ 0.2 from last month
+              </p>
             </div>
 
             {/* Total Reviews */}
@@ -119,17 +146,17 @@ function MyReviewsTab() {
               <p className="mt-2 text-sm text-gray-500">Total Reviews</p>
             </div>
 
-            {/* Rating Breakdown */}
+            {/* Rating Distribution */}
             <div className="space-y-2">
               <p
                 className="mb-2 text-sm font-semibold"
                 style={{ color: "#0F2D5E" }}
               >
-                Rating Breakdown
+                Rating Distribution
               </p>
               {ratingBreakdown.map(({ star, count }) => (
                 <div key={star} className="flex items-center gap-2 text-sm">
-                  <span className="w-12 text-gray-600">{star}-star</span>
+                  <span className="w-12 text-gray-600">{star} star</span>
                   <div className="h-3 flex-1 overflow-hidden rounded-full bg-gray-200">
                     <div
                       className="h-full rounded-full"
@@ -150,26 +177,249 @@ function MyReviewsTab() {
         </CardContent>
       </Card>
 
-      {/* Individual Review Cards */}
+      {/* ===== 2. ATTRIBUTE BREAKDOWN ===== */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg" style={{ color: "#0F2D5E" }}>
+            Attribute Scores
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {attributeAverages.map(({ label, avg }) => (
+              <div key={label}>
+                <div className="mb-1 flex items-center justify-between text-sm">
+                  <span className="font-medium text-gray-700">{label}</span>
+                  <span className="font-semibold" style={{ color: "#0F2D5E" }}>
+                    {avg.toFixed(1)} / 5
+                  </span>
+                </div>
+                <div className="h-3 w-full overflow-hidden rounded-full bg-gray-200">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${(avg / 5) * 100}%`,
+                      backgroundColor: "#F5A623",
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ===== 3. REVIEW LIST WITH MANAGEMENT ACTIONS ===== */}
+      <h3
+        className="mb-4 text-xl font-bold"
+        style={{ color: "#0F2D5E", fontFamily: "Inter, sans-serif" }}
+      >
+        All Reviews
+      </h3>
       <div className="space-y-4">
         {providerReviews.map((review) => (
           <Card key={review.id}>
             <CardContent className="pt-6">
+              {/* Header: stars + date */}
               <div className="mb-2 flex items-center justify-between">
                 <FilledStars count={review.rating} />
                 <span className="text-sm text-gray-500">{review.date}</span>
               </div>
+
+              {/* Reviewer info */}
               <p className="mb-2 font-semibold" style={{ color: "#0F2D5E" }}>
-                {review.reviewerName}{" "}
+                {review.anonymous ? "Anonymous" : review.reviewerName}{" "}
                 <span className="font-normal text-gray-500">
                   &middot; Parent of a {review.studentGrade}
                 </span>
               </p>
-              <p className="text-gray-700">{review.text}</p>
+
+              {/* Review text */}
+              <p className="mb-3 text-gray-700">{review.text}</p>
+
+              {/* Tags */}
+              {review.tags && review.tags.length > 0 && (
+                <div className="mb-3 flex flex-wrap gap-1.5">
+                  {review.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
+                      style={{
+                        backgroundColor: "rgba(15, 45, 94, 0.08)",
+                        color: "#0F2D5E",
+                      }}
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Helpful count */}
+              <div className="mb-3 flex items-center gap-1.5 text-sm text-gray-500">
+                <ThumbsUp className="h-4 w-4" />
+                <span>{review.helpful} found this helpful</span>
+              </div>
+
+              {/* Existing provider response */}
+              {review.providerResponse && (
+                <div
+                  className="mb-3 rounded-lg border border-gray-300 p-3"
+                  style={{ backgroundColor: "#f9fafb" }}
+                >
+                  <p className="mb-1 flex items-center gap-1.5 text-sm font-semibold" style={{ color: "#0F2D5E" }}>
+                    <MessageSquare className="h-4 w-4" />
+                    Your Response
+                  </p>
+                  <p className="text-sm text-gray-700">{review.providerResponse}</p>
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="flex items-center gap-2">
+                {!review.providerResponse && (
+                  <Button
+                    size="sm"
+                    className="flex items-center gap-1.5 text-white"
+                    style={{ backgroundColor: "#0F2D5E" }}
+                    onClick={() => {
+                      setRespondingTo(respondingTo === review.id ? null : review.id);
+                      setResponseText("");
+                      setFlaggingId(null);
+                    }}
+                  >
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    Respond
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex items-center gap-1.5 border-gray-300 text-gray-600"
+                  onClick={() => {
+                    setFlaggingId(flaggingId === review.id ? null : review.id);
+                    setFlagReason("");
+                    setRespondingTo(null);
+                  }}
+                >
+                  <Flag className="h-3.5 w-3.5" />
+                  Flag
+                </Button>
+              </div>
+
+              {/* Inline respond form */}
+              {respondingTo === review.id && (
+                <div className="mt-3 rounded-lg border border-gray-200 p-3">
+                  <textarea
+                    className="mb-2 w-full rounded-md border border-gray-300 p-2 text-sm focus:border-[#0F2D5E] focus:outline-none focus:ring-1 focus:ring-[#0F2D5E]"
+                    rows={3}
+                    placeholder="Write your response..."
+                    value={responseText}
+                    onChange={(e) => setResponseText(e.target.value)}
+                  />
+                  <p className="mb-2 text-xs text-gray-500">
+                    Your response will be visible to all families on your profile.
+                  </p>
+                  <Button
+                    size="sm"
+                    className="text-white"
+                    style={{ backgroundColor: "#0F2D5E" }}
+                    onClick={() => {
+                      alert("Response submitted! It will appear on your public profile after review.");
+                      setRespondingTo(null);
+                      setResponseText("");
+                    }}
+                  >
+                    Submit Response
+                  </Button>
+                </div>
+              )}
+
+              {/* Inline flag form */}
+              {flaggingId === review.id && (
+                <div className="mt-3 rounded-lg border border-gray-200 p-3">
+                  <p className="mb-2 text-sm font-semibold" style={{ color: "#0F2D5E" }}>
+                    Why are you flagging this review?
+                  </p>
+                  {["Inaccurate", "Inappropriate", "Not a real customer", "Other"].map((reason) => (
+                    <label key={reason} className="mb-1 flex items-center gap-2 text-sm text-gray-700">
+                      <input
+                        type="radio"
+                        name={`flag-${review.id}`}
+                        value={reason}
+                        checked={flagReason === reason}
+                        onChange={(e) => setFlagReason(e.target.value)}
+                        className="accent-[#0F2D5E]"
+                      />
+                      {reason}
+                    </label>
+                  ))}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-2 border-red-300 text-red-600 hover:bg-red-50"
+                    onClick={() => {
+                      if (!flagReason) {
+                        alert("Please select a reason.");
+                        return;
+                      }
+                      alert(`Review flagged as "${flagReason}". Our team will review this within 48 hours.`);
+                      setFlaggingId(null);
+                      setFlagReason("");
+                    }}
+                  >
+                    Submit Flag
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}
       </div>
+
+      {/* ===== 4. REQUEST A REVIEW ===== */}
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg" style={{ color: "#0F2D5E" }}>
+            <Send className="h-5 w-5" />
+            Request a Review
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-3 text-sm text-gray-600">
+            Invite a family to leave a review of your program. Limited to 3 requests per family per provider.
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="flex-1">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Family Email Address
+              </label>
+              <input
+                type="email"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0F2D5E] focus:outline-none focus:ring-1 focus:ring-[#0F2D5E]"
+                placeholder="parent@example.com"
+                value={requestEmail}
+                onChange={(e) => setRequestEmail(e.target.value)}
+              />
+            </div>
+            <Button
+              className="flex items-center gap-2 text-white"
+              style={{ backgroundColor: "#F5A623" }}
+              onClick={() => {
+                if (!requestEmail) {
+                  alert("Please enter an email address.");
+                  return;
+                }
+                alert("Review request sent!");
+                setRequestEmail("");
+              }}
+            >
+              <Send className="h-4 w-4" />
+              Send Request
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
