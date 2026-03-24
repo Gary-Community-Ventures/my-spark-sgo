@@ -8,6 +8,7 @@ import Support from './pages/Support'
 import Admin from './pages/Admin'
 import DonorPortal from './pages/DonorPortal'
 import SetupWizard from './pages/SetupWizard'
+import ApplicationStatus from './pages/ApplicationStatus'
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/donate" element={<DonorPortal />} />
         <Route path="/setup" element={<SetupWizard />} />
+        <Route path="/application-status" element={<ApplicationStatus />} />
       </Routes>
     </Router>
   )
