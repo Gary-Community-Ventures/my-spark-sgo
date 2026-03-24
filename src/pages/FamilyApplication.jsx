@@ -22,6 +22,8 @@ import {
   Heart,
   FileText,
   ArrowLeft,
+  Upload,
+  AlertTriangle,
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import PageHeader from "@/components/PageHeader";
@@ -41,6 +43,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import states from "@/data/states";
+import coloradoDistricts from "@/data/coloradoDistricts";
 
 /* ─── constants ─────────────────────────────────────────────────── */
 
@@ -137,6 +140,12 @@ function FamilyApplication() {
     race: [],
     iep504: "",
     frlEligibility: false,
+    schoolDistrict: "",
+    verificationStudentId: "",
+    verificationStatus: "", // "" | "checking" | "verified" | "not_found"
+    frlDocUploaded: false,
+    incomeDocUploaded: false,
+    otherDocUploaded: false,
 
     // Step 3
     passionFrequency: "",
@@ -716,9 +725,167 @@ function FamilyApplication() {
           <FieldError field="iep504" />
         </div>
 
-        {/* FRL Eligibility */}
-        <div className="rounded-lg border p-4 bg-amber-50 border-amber-200">
-          <div className="flex items-start gap-3">
+        {/* FRL Eligibility Verification */}
+        <div className="rounded-lg border p-5" style={{ borderColor: "#0F2D5E", backgroundColor: "rgba(15,45,94,0.03)" }}>
+          <h4 className="text-base font-semibold mb-1" style={{ color: "#0F2D5E" }}>
+            Verify Free & Reduced Lunch Eligibility
+          </h4>
+          <p className="text-sm text-gray-500 mb-4">
+            We can verify eligibility automatically through school records, or you can upload documentation.
+          </p>
+
+          {/* Path 1: Automated Verification */}
+          <div className="space-y-3 mb-4">
+            <div>
+              <Label>School District *</Label>
+              <Select value={form.schoolDistrict} onValueChange={(v) => updateField("schoolDistrict", v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select school district" />
+                </SelectTrigger>
+                <SelectContent>
+                  {coloradoDistricts.map((d) => (
+                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label>School Name</Label>
+                <Input value={form.currentSchool} disabled className="bg-gray-50" />
+              </div>
+              <div>
+                <Label>Student ID / Lunch Number</Label>
+                <Input
+                  value={form.verificationStudentId}
+                  onChange={(e) => updateField("verificationStudentId", e.target.value)}
+                  placeholder="Enter student ID"
+                />
+              </div>
+            </div>
+            <Button
+              type="button"
+              disabled={!form.schoolDistrict || !form.verificationStudentId || form.verificationStatus === "checking"}
+              style={{ backgroundColor: "#0F2D5E", color: "#fff" }}
+              onClick={() => {
+                updateField("verificationStatus", "checking");
+                setTimeout(() => {
+                  const firstDigit = parseInt(form.verificationStudentId.charAt(0), 10);
+                  if (!isNaN(firstDigit) && firstDigit % 2 === 0) {
+                    updateField("verificationStatus", "verified");
+                    updateField("frlEligibility", true);
+                  } else {
+                    updateField("verificationStatus", "not_found");
+                  }
+                }, 1500);
+              }}
+            >
+              {form.verificationStatus === "checking" ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  Checking...
+                </span>
+              ) : (
+                "Check Eligibility"
+              )}
+            </Button>
+
+            {form.verificationStatus === "verified" && (
+              <div className="flex items-center gap-2 rounded-lg p-3" style={{ backgroundColor: "rgba(46,125,50,0.08)", border: "1px solid #2E7D32" }}>
+                <Check className="h-5 w-5" style={{ color: "#2E7D32" }} />
+                <span className="text-sm font-medium" style={{ color: "#2E7D32" }}>Eligibility confirmed automatically via school records.</span>
+              </div>
+            )}
+
+            {form.verificationStatus === "not_found" && (
+              <div className="flex items-start gap-2 rounded-lg p-3" style={{ backgroundColor: "rgba(245,166,35,0.08)", border: "1px solid #F5A623" }}>
+                <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: "#F5A623" }} />
+                <div>
+                  <p className="text-sm font-medium" style={{ color: "#0F2D5E" }}>Record not found in automated system.</p>
+                  <p className="text-xs text-gray-500 mt-1">Please upload documentation below to verify eligibility manually.</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Path 2: Document Upload (shown if not_found or always as alternative) */}
+          {(form.verificationStatus === "not_found" || form.verificationStatus === "") && (
+            <div className="border-t pt-4 mt-4" style={{ borderColor: "#e5e7eb" }}>
+              <h5 className="text-sm font-semibold mb-3" style={{ color: "#0F2D5E" }}>
+                {form.verificationStatus === "not_found" ? "Upload Verification Documents" : "Or Upload Documents Manually"}
+              </h5>
+
+              {/* FRL Letter */}
+              <div
+                className="mb-3 rounded-lg border-2 border-dashed p-4 text-center cursor-pointer transition-colors"
+                style={{ borderColor: form.frlDocUploaded ? "#2E7D32" : "#d1d5db" }}
+                onClick={() => updateField("frlDocUploaded", !form.frlDocUploaded)}
+              >
+                {form.frlDocUploaded ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <Check className="h-5 w-5" style={{ color: "#2E7D32" }} />
+                    <span className="text-sm font-medium" style={{ color: "#2E7D32" }}>FRL_Approval_Letter.pdf</span>
+                    <span className="text-xs text-gray-400">(click to remove)</span>
+                  </div>
+                ) : (
+                  <div>
+                    <Upload className="h-6 w-6 mx-auto mb-1 text-gray-400" />
+                    <p className="text-sm font-medium text-gray-600">Free & Reduced Lunch Approval Letter <span className="text-red-500">*</span></p>
+                    <p className="text-xs text-gray-400">PDF or image files accepted</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Income Doc */}
+              <div
+                className="mb-3 rounded-lg border-2 border-dashed p-4 text-center cursor-pointer transition-colors"
+                style={{ borderColor: form.incomeDocUploaded ? "#2E7D32" : "#d1d5db" }}
+                onClick={() => updateField("incomeDocUploaded", !form.incomeDocUploaded)}
+              >
+                {form.incomeDocUploaded ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <Check className="h-5 w-5" style={{ color: "#2E7D32" }} />
+                    <span className="text-sm font-medium" style={{ color: "#2E7D32" }}>Tax_Return_2025.pdf</span>
+                    <span className="text-xs text-gray-400">(click to remove)</span>
+                  </div>
+                ) : (
+                  <div>
+                    <Upload className="h-6 w-6 mx-auto mb-1 text-gray-400" />
+                    <p className="text-sm font-medium text-gray-600">Prior Year Tax Return or Income Documentation <span className="text-gray-400 font-normal">(optional)</span></p>
+                    <p className="text-xs text-gray-400">PDF or image files accepted</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Other Doc */}
+              <div
+                className="mb-3 rounded-lg border-2 border-dashed p-4 text-center cursor-pointer transition-colors"
+                style={{ borderColor: form.otherDocUploaded ? "#2E7D32" : "#d1d5db" }}
+                onClick={() => updateField("otherDocUploaded", !form.otherDocUploaded)}
+              >
+                {form.otherDocUploaded ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <Check className="h-5 w-5" style={{ color: "#2E7D32" }} />
+                    <span className="text-sm font-medium" style={{ color: "#2E7D32" }}>Supporting_Doc.pdf</span>
+                    <span className="text-xs text-gray-400">(click to remove)</span>
+                  </div>
+                ) : (
+                  <div>
+                    <Upload className="h-6 w-6 mx-auto mb-1 text-gray-400" />
+                    <p className="text-sm font-medium text-gray-600">Other Supporting Documentation <span className="text-gray-400 font-normal">(optional)</span></p>
+                    <p className="text-xs text-gray-400">PDF or image files accepted</p>
+                  </div>
+                )}
+              </div>
+
+              <p className="text-xs text-gray-500 mt-2 italic">
+                Not sure what to upload? Contact our support team and we will help you figure it out.
+              </p>
+            </div>
+          )}
+
+          {/* FRL affirmation checkbox */}
+          <div className="mt-4 flex items-start gap-3 rounded-lg p-3 bg-amber-50 border border-amber-200">
             <Checkbox
               id="frlEligibility"
               checked={form.frlEligibility}
@@ -729,7 +896,9 @@ function FamilyApplication() {
                 I affirm that this student is eligible for Free and Reduced Lunch.
               </Label>
               <p className="mt-1 text-xs text-gray-500">
-                Note: School staff signature may be required for verification.
+                {form.verificationStatus === "verified"
+                  ? "Verified automatically — no additional documentation needed."
+                  : "Uploaded documents will be reviewed by our team within 3-5 business days."}
               </p>
             </div>
           </div>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   CheckCircle,
   DollarSign,
@@ -19,7 +20,9 @@ import {
   AlertTriangle,
   Upload,
   Pencil,
+  Star,
 } from "lucide-react";
+import reviews from "@/data/reviews";
 
 const paymentHistory = [
   { date: "Mar 18, 2026", studentRef: "STU-2026-0042", amount: 150.0, status: "Completed" },
@@ -55,6 +58,119 @@ function statusBadge(status) {
     <Badge className="border-transparent bg-gray-400 text-white hover:bg-gray-400/80">
       {status}
     </Badge>
+  );
+}
+
+const providerReviews = reviews["prov-001"] || [];
+const avgRating =
+  providerReviews.length > 0
+    ? providerReviews.reduce((sum, r) => sum + r.rating, 0) / providerReviews.length
+    : 0;
+const totalReviews = providerReviews.length;
+
+// Build rating breakdown (5 down to 1)
+const ratingBreakdown = [5, 4, 3, 2, 1].map((star) => ({
+  star,
+  count: providerReviews.filter((r) => r.rating === star).length,
+}));
+
+function FilledStars({ count, size = "h-5 w-5" }) {
+  return (
+    <span className="inline-flex gap-0.5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Star
+          key={i}
+          className={`${size} ${i < count ? "fill-amber-400 text-amber-400" : "text-gray-300"}`}
+        />
+      ))}
+    </span>
+  );
+}
+
+function MyReviewsTab() {
+  return (
+    <div>
+      {/* Aggregate Summary */}
+      <Card className="mb-6">
+        <CardContent className="pt-6">
+          <div className="grid gap-8 md:grid-cols-3">
+            {/* Average Rating */}
+            <div className="flex flex-col items-center justify-center text-center">
+              <p
+                className="text-5xl font-bold"
+                style={{ color: "#0F2D5E" }}
+              >
+                {avgRating.toFixed(1)}
+              </p>
+              <div className="mt-2">
+                <FilledStars count={Math.round(avgRating)} size="h-6 w-6" />
+              </div>
+              <p className="mt-1 text-sm text-gray-500">Average Rating</p>
+            </div>
+
+            {/* Total Reviews */}
+            <div className="flex flex-col items-center justify-center text-center">
+              <p
+                className="text-5xl font-bold"
+                style={{ color: "#0F2D5E" }}
+              >
+                {totalReviews}
+              </p>
+              <p className="mt-2 text-sm text-gray-500">Total Reviews</p>
+            </div>
+
+            {/* Rating Breakdown */}
+            <div className="space-y-2">
+              <p
+                className="mb-2 text-sm font-semibold"
+                style={{ color: "#0F2D5E" }}
+              >
+                Rating Breakdown
+              </p>
+              {ratingBreakdown.map(({ star, count }) => (
+                <div key={star} className="flex items-center gap-2 text-sm">
+                  <span className="w-12 text-gray-600">{star}-star</span>
+                  <div className="h-3 flex-1 overflow-hidden rounded-full bg-gray-200">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width:
+                          totalReviews > 0
+                            ? `${(count / totalReviews) * 100}%`
+                            : "0%",
+                        backgroundColor: "#F5A623",
+                      }}
+                    />
+                  </div>
+                  <span className="w-6 text-right font-medium text-gray-700">{count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Individual Review Cards */}
+      <div className="space-y-4">
+        {providerReviews.map((review) => (
+          <Card key={review.id}>
+            <CardContent className="pt-6">
+              <div className="mb-2 flex items-center justify-between">
+                <FilledStars count={review.rating} />
+                <span className="text-sm text-gray-500">{review.date}</span>
+              </div>
+              <p className="mb-2 font-semibold" style={{ color: "#0F2D5E" }}>
+                {review.reviewerName}{" "}
+                <span className="font-normal text-gray-500">
+                  &middot; Parent of a {review.studentGrade}
+                </span>
+              </p>
+              <p className="text-gray-700">{review.text}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -242,151 +358,169 @@ function ProviderDashboard() {
           </CardContent>
         </Card>
 
-        {/* ============ 4. PAYMENT HISTORY TABLE ============ */}
-        <div className="mb-10">
-          <h3
-            className="mb-4 text-2xl font-bold"
-            style={{ color: "#0F2D5E", fontFamily: "Inter, sans-serif" }}
-          >
-            Payment History
-          </h3>
+        {/* ============ 4. TABS: PAYMENTS / MY REVIEWS / DOCUMENTS ============ */}
+        <Tabs defaultValue="payments" className="mb-10">
+          <TabsList className="mb-6">
+            <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="reviews">My Reviews</TabsTrigger>
+            <TabsTrigger value="documents">Documents</TabsTrigger>
+          </TabsList>
 
-          {/* Desktop table */}
-          <div className="hidden overflow-hidden rounded-lg border sm:block">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 font-semibold" style={{ color: "#0F2D5E" }}>
-                    Date
-                  </th>
-                  <th className="px-4 py-3 font-semibold" style={{ color: "#0F2D5E" }}>
-                    Student Reference #
-                  </th>
-                  <th className="px-4 py-3 font-semibold" style={{ color: "#0F2D5E" }}>
-                    Amount
-                  </th>
-                  <th className="px-4 py-3 font-semibold" style={{ color: "#0F2D5E" }}>
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
+          {/* ---- Payments Tab ---- */}
+          <TabsContent value="payments">
+            <div>
+              <h3
+                className="mb-4 text-2xl font-bold"
+                style={{ color: "#0F2D5E", fontFamily: "Inter, sans-serif" }}
+              >
+                Payment History
+              </h3>
+
+              {/* Desktop table */}
+              <div className="hidden overflow-hidden rounded-lg border sm:block">
+                <table className="w-full text-left text-sm">
+                  <thead className="border-b bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 font-semibold" style={{ color: "#0F2D5E" }}>
+                        Date
+                      </th>
+                      <th className="px-4 py-3 font-semibold" style={{ color: "#0F2D5E" }}>
+                        Student Reference #
+                      </th>
+                      <th className="px-4 py-3 font-semibold" style={{ color: "#0F2D5E" }}>
+                        Amount
+                      </th>
+                      <th className="px-4 py-3 font-semibold" style={{ color: "#0F2D5E" }}>
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {paymentHistory.map((row, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-gray-600">{row.date}</td>
+                        <td className="px-4 py-3 font-medium text-gray-800">{row.studentRef}</td>
+                        <td className="px-4 py-3 font-medium text-gray-800">
+                          ${row.amount.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3">{statusBadge(row.status)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="border-t-2 bg-gray-50">
+                    <tr>
+                      <td
+                        className="px-4 py-3 font-bold"
+                        style={{ color: "#0F2D5E" }}
+                        colSpan={2}
+                      >
+                        Total
+                      </td>
+                      <td className="px-4 py-3 font-bold" style={{ color: "#0F2D5E" }}>
+                        ${paymentTotal.toFixed(2)}
+                      </td>
+                      <td />
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              {/* Mobile cards */}
+              <div className="flex flex-col gap-3 sm:hidden">
                 {paymentHistory.map((row, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-gray-600">{row.date}</td>
-                    <td className="px-4 py-3 font-medium text-gray-800">{row.studentRef}</td>
-                    <td className="px-4 py-3 font-medium text-gray-800">
-                      ${row.amount.toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3">{statusBadge(row.status)}</td>
-                  </tr>
+                  <Card key={index}>
+                    <CardContent className="pt-4">
+                      <div className="mb-1 flex items-center justify-between">
+                        <span className="font-semibold text-gray-800">{row.studentRef}</span>
+                        {statusBadge(row.status)}
+                      </div>
+                      <div className="text-sm text-gray-500">{row.date}</div>
+                      <p className="mt-2 text-lg font-bold" style={{ color: "#0F2D5E" }}>
+                        ${row.amount.toFixed(2)}
+                      </p>
+                    </CardContent>
+                  </Card>
                 ))}
-              </tbody>
-              <tfoot className="border-t-2 bg-gray-50">
-                <tr>
-                  <td
-                    className="px-4 py-3 font-bold"
-                    style={{ color: "#0F2D5E" }}
-                    colSpan={2}
-                  >
-                    Total
-                  </td>
-                  <td className="px-4 py-3 font-bold" style={{ color: "#0F2D5E" }}>
-                    ${paymentTotal.toFixed(2)}
-                  </td>
-                  <td />
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-
-          {/* Mobile cards */}
-          <div className="flex flex-col gap-3 sm:hidden">
-            {paymentHistory.map((row, index) => (
-              <Card key={index}>
-                <CardContent className="pt-4">
-                  <div className="mb-1 flex items-center justify-between">
-                    <span className="font-semibold text-gray-800">{row.studentRef}</span>
-                    {statusBadge(row.status)}
-                  </div>
-                  <div className="text-sm text-gray-500">{row.date}</div>
-                  <p className="mt-2 text-lg font-bold" style={{ color: "#0F2D5E" }}>
-                    ${row.amount.toFixed(2)}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-            <div className="rounded-lg border bg-gray-50 px-4 py-3 text-right">
-              <span className="font-bold" style={{ color: "#0F2D5E" }}>
-                Total: ${paymentTotal.toFixed(2)}
-              </span>
+                <div className="rounded-lg border bg-gray-50 px-4 py-3 text-right">
+                  <span className="font-bold" style={{ color: "#0F2D5E" }}>
+                    Total: ${paymentTotal.toFixed(2)}
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          </TabsContent>
 
-        {/* ============ 5. DOCUMENT CHECKLIST ============ */}
-        <Card className="mb-10">
-          <CardHeader>
-            <CardTitle
-              className="flex items-center gap-2 text-xl"
-              style={{ color: "#0F2D5E" }}
-            >
-              <FileText className="h-5 w-5" />
-              Document Checklist
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="divide-y">
-              {documents.map((doc, index) => (
-                <div key={index} className="flex items-center justify-between py-3">
-                  <div className="flex items-center gap-3">
-                    {doc.status === "on-file" ? (
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                    ) : (
-                      <AlertTriangle className="h-5 w-5 text-amber-500" />
-                    )}
-                    <div>
-                      <p className="font-medium text-gray-800">{doc.name}</p>
-                      {doc.status === "on-file" && (
-                        <p className="text-sm text-gray-500">
-                          Uploaded {doc.date}
-                        </p>
-                      )}
-                      {doc.status === "expiring" && (
-                        <p className="text-sm font-semibold text-red-600">
-                          Expiring Soon! Exp: {doc.expDate}
-                        </p>
+          {/* ---- My Reviews Tab ---- */}
+          <TabsContent value="reviews">
+            <MyReviewsTab />
+          </TabsContent>
+
+          {/* ---- Documents Tab ---- */}
+          <TabsContent value="documents">
+            <Card>
+              <CardHeader>
+                <CardTitle
+                  className="flex items-center gap-2 text-xl"
+                  style={{ color: "#0F2D5E" }}
+                >
+                  <FileText className="h-5 w-5" />
+                  Document Checklist
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="divide-y">
+                  {documents.map((doc, index) => (
+                    <div key={index} className="flex items-center justify-between py-3">
+                      <div className="flex items-center gap-3">
+                        {doc.status === "on-file" ? (
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <AlertTriangle className="h-5 w-5 text-amber-500" />
+                        )}
+                        <div>
+                          <p className="font-medium text-gray-800">{doc.name}</p>
+                          {doc.status === "on-file" && (
+                            <p className="text-sm text-gray-500">
+                              Uploaded {doc.date}
+                            </p>
+                          )}
+                          {doc.status === "expiring" && (
+                            <p className="text-sm font-semibold text-red-600">
+                              Expiring Soon! Exp: {doc.expDate}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      {doc.status === "on-file" ? (
+                        <Badge variant="success" className="flex items-center gap-1">
+                          <ShieldCheck className="h-3.5 w-3.5" />
+                          On File
+                        </Badge>
+                      ) : (
+                        <Badge className="flex items-center gap-1 border-transparent bg-amber-500 text-white hover:bg-amber-500/80">
+                          <AlertTriangle className="h-3.5 w-3.5" />
+                          Expiring Soon
+                        </Badge>
                       )}
                     </div>
-                  </div>
-                  {doc.status === "on-file" ? (
-                    <Badge variant="success" className="flex items-center gap-1">
-                      <ShieldCheck className="h-3.5 w-3.5" />
-                      On File
-                    </Badge>
-                  ) : (
-                    <Badge className="flex items-center gap-1 border-transparent bg-amber-500 text-white hover:bg-amber-500/80">
-                      <AlertTriangle className="h-3.5 w-3.5" />
-                      Expiring Soon
-                    </Badge>
-                  )}
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            <Separator className="my-4" />
+                <Separator className="my-4" />
 
-            <div className="flex justify-end">
-              <Button
-                className="flex items-center gap-2 text-white"
-                style={{ backgroundColor: "#F5A623" }}
-              >
-                <Upload className="h-4 w-4" />
-                Upload Documents
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+                <div className="flex justify-end">
+                  <Button
+                    className="flex items-center gap-2 text-white"
+                    style={{ backgroundColor: "#F5A623" }}
+                  >
+                    <Upload className="h-4 w-4" />
+                    Upload Documents
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );

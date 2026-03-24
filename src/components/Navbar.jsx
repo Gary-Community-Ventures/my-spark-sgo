@@ -18,6 +18,7 @@ const navLinks = [
       { label: "Provider Dashboard", to: "/dashboard/provider" },
     ],
   },
+  { label: "Donate", to: "/donate" },
   { label: "Support", to: "/support" },
   { label: "Admin", to: "/admin" },
 ];

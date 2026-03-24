@@ -6,6 +6,7 @@ import FamilyDashboard from './pages/FamilyDashboard'
 import ProviderDashboard from './pages/ProviderDashboard'
 import Support from './pages/Support'
 import Admin from './pages/Admin'
+import DonorPortal from './pages/DonorPortal'
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/dashboard/provider" element={<ProviderDashboard />} />
         <Route path="/support" element={<Support />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/donate" element={<DonorPortal />} />
       </Routes>
     </Router>
   )
