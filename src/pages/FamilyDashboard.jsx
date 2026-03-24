@@ -35,10 +35,17 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
   Cell,
+  LineChart,
+  Line,
+  Legend,
 } from "recharts";
 import providers from "@/data/providers";
 import students from "@/data/students";
 import reviews from "@/data/reviews";
+import selDataExports from "@/data/selData";
+import subsidyData from "@/data/subsidyData";
+
+const { surveyTypes, monthlyQuestions, selTimeline, selTimelineMarcus, milestones } = selDataExports;
 
 const categoryFilters = [
   "All",
@@ -87,6 +94,13 @@ function FamilyDashboard() {
   const [newReviewRating, setNewReviewRating] = useState(0);
   const [newReviewText, setNewReviewText] = useState("");
   const [addStudentSuccess, setAddStudentSuccess] = useState(false);
+  const [showSELSurvey, setShowSELSurvey] = useState(false);
+  const [selSurveyType, setSelSurveyType] = useState("monthly");
+  const [selResponses, setSelResponses] = useState({});
+  const [selCurrentQ, setSelCurrentQ] = useState(0);
+  const [selComplete, setSelComplete] = useState(false);
+  const [showSubsidyFinder, setShowSubsidyFinder] = useState(false);
+  const [flaggedSubsidies, setFlaggedSubsidies] = useState([]);
   const [newStudent, setNewStudent] = useState({
     firstName: "",
     lastName: "",
@@ -293,6 +307,43 @@ function FamilyDashboard() {
             </p>
           </div>
         </div>
+
+        {/* ============ SEL CHECK-IN BANNER ============ */}
+        <Card
+          className="mb-8 overflow-hidden border-l-4"
+          style={{ borderLeftColor: "#F5A623", backgroundColor: "#FFFDF7" }}
+        >
+          <CardContent className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div
+                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full"
+                style={{ backgroundColor: "rgba(245, 166, 35, 0.15)" }}
+              >
+                <Sparkles className="h-5 w-5" style={{ color: "#F5A623" }} />
+              </div>
+              <div>
+                <p className="font-semibold" style={{ color: "#0F2D5E" }}>
+                  How is {student.firstName} doing?
+                </p>
+                <p className="text-sm text-gray-500">
+                  Take our 2-minute check-in
+                </p>
+              </div>
+            </div>
+            <Button
+              className="flex-shrink-0 text-white"
+              style={{ backgroundColor: "#F5A623" }}
+              onClick={() => {
+                setShowSELSurvey(true);
+                setSelResponses({});
+                setSelCurrentQ(0);
+                setSelComplete(false);
+              }}
+            >
+              Start Check-In
+            </Button>
+          </CardContent>
+        </Card>
 
         {/* ============ VERIFICATION STATUS ============ */}
         <div className="mb-8">
@@ -510,6 +561,30 @@ function FamilyDashboard() {
           </div>
         </div>
 
+        {/* ============ MAXIMIZE YOUR FUNDS ============ */}
+        <Card className="mb-10 overflow-hidden border" style={{ borderColor: "#E5E7EB" }}>
+          <CardContent className="flex flex-col gap-4 py-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h4
+                className="text-lg font-bold"
+                style={{ color: "#0F2D5E", fontFamily: "Inter, sans-serif" }}
+              >
+                Your ${student.totalBudget} card could go even further
+              </h4>
+              <p className="mt-1 text-sm text-gray-500">
+                Discover additional subsidies and scholarships
+              </p>
+            </div>
+            <Button
+              className="flex-shrink-0 text-white"
+              style={{ backgroundColor: "#0F2D5E" }}
+              onClick={() => setShowSubsidyFinder(true)}
+            >
+              Explore Funding
+            </Button>
+          </CardContent>
+        </Card>
+
         {/* ============ SPENDING SUMMARY ============ */}
         <Card className="mb-10">
           <CardHeader>
@@ -579,6 +654,93 @@ function FamilyDashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* ============ STUDENT JOURNEY ============ */}
+        <div className="mb-10">
+          <h3
+            className="mb-5 text-2xl font-bold"
+            style={{ color: "#0F2D5E", fontFamily: "Inter, sans-serif" }}
+          >
+            {student.firstName}'s Journey
+          </h3>
+
+          {/* SEL Trend Chart */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-lg" style={{ color: "#0F2D5E" }}>
+                Social-Emotional Growth Over Time
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={activeStudentId === "stu-002" ? selTimelineMarcus : selTimeline}
+                    margin={{ top: 10, right: 30, left: 0, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="period" tick={{ fill: "#0F2D5E", fontSize: 12 }} />
+                    <YAxis domain={[1, 5]} tick={{ fill: "#0F2D5E", fontSize: 12 }} />
+                    <RechartsTooltip
+                      contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb" }}
+                    />
+                    <Legend />
+                    <Line type="monotone" dataKey="confidence" name="Confidence" stroke="#0F2D5E" strokeWidth={2} dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="belonging" name="Belonging" stroke="#F5A623" strokeWidth={2} dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="schoolEngagement" name="School Engagement" stroke="#2E7D32" strokeWidth={2} dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="wellbeing" name="Wellbeing" stroke="#7C3AED" strokeWidth={2} dot={{ r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Activity Milestones */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-lg" style={{ color: "#0F2D5E" }}>
+                Activity Milestones
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative border-l-2 border-gray-200 pl-6">
+                {(milestones[student.id] || []).map((m, idx) => (
+                  <div key={idx} className="relative mb-6 last:mb-0">
+                    <div
+                      className="absolute -left-[31px] top-0.5 h-4 w-4 rounded-full border-2 border-white"
+                      style={{ backgroundColor: "#F5A623" }}
+                    />
+                    <p className="text-xs font-medium text-gray-400">{m.date}</p>
+                    <p className="text-sm font-medium text-gray-700">{m.event}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Growth Summary */}
+          {(() => {
+            const timeline = activeStudentId === "stu-002" ? selTimelineMarcus : selTimeline;
+            const first = timeline[0].confidence;
+            const last = timeline[timeline.length - 1].confidence;
+            const pct = Math.round(((last - first) / first) * 100);
+            return (
+              <Card
+                className="overflow-hidden border-l-4"
+                style={{ borderLeftColor: "#2E7D32", backgroundColor: "#F0FFF4" }}
+              >
+                <CardContent className="py-5">
+                  <p className="font-semibold" style={{ color: "#2E7D32" }}>
+                    Growth Summary
+                  </p>
+                  <p className="mt-1 text-sm text-gray-600">
+                    Since enrolling in September, {student.firstName}'s confidence score has grown from {first} to {last} — a {pct}% improvement!
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })()}
+        </div>
 
         {/* ============ RECOMMENDED FOR YOU (Feature 1) ============ */}
         <div className="mb-10">
@@ -1402,6 +1564,296 @@ function FamilyDashboard() {
                   Close
                 </Button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ============ SEL SURVEY MODAL ============ */}
+      {showSELSurvey && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.6)" }}
+        >
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-6 shadow-2xl">
+            {selComplete ? (
+              /* Thank-you screen */
+              <div className="flex flex-col items-center gap-4 py-10 text-center">
+                <div
+                  className="flex h-16 w-16 items-center justify-center rounded-full"
+                  style={{ backgroundColor: "rgba(46, 125, 50, 0.12)" }}
+                >
+                  <CheckCircle className="h-10 w-10" style={{ color: "#2E7D32" }} />
+                </div>
+                <h3 className="text-xl font-bold" style={{ color: "#0F2D5E" }}>
+                  Thank you for sharing about {student.firstName}!
+                </h3>
+                <p className="text-sm text-gray-500 max-w-sm">
+                  It sounds like {student.firstName} is really finding her confidence in dance — that's exactly what My Spark is for.
+                </p>
+                <Button
+                  className="mt-4 text-white"
+                  style={{ backgroundColor: "#0F2D5E" }}
+                  onClick={() => setShowSELSurvey(false)}
+                >
+                  Close
+                </Button>
+              </div>
+            ) : (
+              <>
+                {/* Header */}
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-xl font-bold" style={{ color: "#0F2D5E" }}>
+                    SEL Check-In
+                  </h3>
+                  <button
+                    onClick={() => setShowSELSurvey(false)}
+                    className="rounded-full p-1 hover:bg-gray-100"
+                  >
+                    <X className="h-5 w-5 text-gray-400" />
+                  </button>
+                </div>
+
+                {/* Survey type selector (demo) */}
+                <div className="mb-5">
+                  <Label className="mb-1 block text-sm text-gray-500">Survey Type</Label>
+                  <select
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F2D5E]"
+                    value={selSurveyType}
+                    onChange={(e) => {
+                      setSelSurveyType(e.target.value);
+                      setSelResponses({});
+                      setSelCurrentQ(0);
+                    }}
+                  >
+                    {surveyTypes.map((st) => (
+                      <option key={st.id} value={st.id}>
+                        {st.name} ({st.duration}, {st.questionCount} questions)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Progress bar */}
+                <div className="mb-6">
+                  <div className="mb-1 flex justify-between text-xs text-gray-400">
+                    <span>Question {selCurrentQ + 1} of {monthlyQuestions.length}</span>
+                    <span>{Math.round(((selCurrentQ) / monthlyQuestions.length) * 100)}%</span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${(selCurrentQ / monthlyQuestions.length) * 100}%`,
+                        backgroundColor: "#F5A623",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Current Question */}
+                {(() => {
+                  const q = monthlyQuestions[selCurrentQ];
+                  return (
+                    <div className="mb-6">
+                      <p className="mb-4 text-lg font-medium" style={{ color: "#0F2D5E" }}>
+                        {q.text}
+                      </p>
+                      {q.type === "scale" ? (
+                        <div className="flex justify-center gap-3">
+                          {[
+                            { emoji: "\uD83D\uDE22", val: 1 },
+                            { emoji: "\uD83D\uDE15", val: 2 },
+                            { emoji: "\uD83D\uDE10", val: 3 },
+                            { emoji: "\uD83D\uDE42", val: 4 },
+                            { emoji: "\uD83D\uDE04", val: 5 },
+                          ].map(({ emoji, val }) => (
+                            <button
+                              key={val}
+                              onClick={() =>
+                                setSelResponses((prev) => ({ ...prev, [q.id]: val }))
+                              }
+                              className="flex h-14 w-14 items-center justify-center rounded-xl border-2 text-2xl transition-all"
+                              style={{
+                                borderColor: selResponses[q.id] === val ? "#F5A623" : "#e5e7eb",
+                                backgroundColor: selResponses[q.id] === val ? "rgba(245,166,35,0.1)" : "transparent",
+                                transform: selResponses[q.id] === val ? "scale(1.15)" : "scale(1)",
+                              }}
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <Textarea
+                          rows={4}
+                          placeholder="Share your thoughts..."
+                          value={selResponses[q.id] || ""}
+                          onChange={(e) =>
+                            setSelResponses((prev) => ({ ...prev, [q.id]: e.target.value }))
+                          }
+                        />
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* Navigation */}
+                <div className="flex justify-between">
+                  <Button
+                    variant="outline"
+                    disabled={selCurrentQ === 0}
+                    onClick={() => setSelCurrentQ((p) => p - 1)}
+                  >
+                    Back
+                  </Button>
+                  {selCurrentQ < monthlyQuestions.length - 1 ? (
+                    <Button
+                      className="text-white"
+                      style={{ backgroundColor: "#0F2D5E" }}
+                      disabled={selResponses[monthlyQuestions[selCurrentQ].id] == null}
+                      onClick={() => setSelCurrentQ((p) => p + 1)}
+                    >
+                      Next
+                    </Button>
+                  ) : (
+                    <Button
+                      className="text-white"
+                      style={{ backgroundColor: "#2E7D32" }}
+                      disabled={selResponses[monthlyQuestions[selCurrentQ].id] == null}
+                      onClick={() => setSelComplete(true)}
+                    >
+                      Submit
+                    </Button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ============ SUBSIDY FINDER MODAL ============ */}
+      {showSubsidyFinder && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.6)" }}
+        >
+          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl bg-white shadow-2xl">
+            {/* Header */}
+            <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-xl border-b bg-white px-6 py-4">
+              <h3 className="text-xl font-bold" style={{ color: "#0F2D5E" }}>
+                Maximize Your Funds
+              </h3>
+              <button
+                onClick={() => setShowSubsidyFinder(false)}
+                className="rounded-full p-1 hover:bg-gray-100"
+              >
+                <X className="h-5 w-5 text-gray-400" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {/* Explainer */}
+              <div
+                className="mb-6 rounded-lg p-4"
+                style={{ backgroundColor: "rgba(245, 166, 35, 0.08)", border: "1px solid rgba(245, 166, 35, 0.25)" }}
+              >
+                <h4 className="mb-1 font-semibold" style={{ color: "#0F2D5E" }}>
+                  How stacking works with your My Spark card
+                </h4>
+                <p className="text-sm text-gray-600">
+                  Many families qualify for additional subsidies and scholarships beyond their My Spark SGO funds. By "stacking" multiple funding sources, you can stretch your child's enrichment budget even further. Browse the options below and apply to any that fit your family's situation.
+                </p>
+              </div>
+
+              {/* Subsidy Grid */}
+              <div className="mb-8 grid gap-4 sm:grid-cols-2">
+                {subsidyData.map((sub) => {
+                  const isFlagged = flaggedSubsidies.includes(sub.id);
+                  const matchColor =
+                    sub.matchScore === "High"
+                      ? { bg: "#DEF7EC", text: "#03543F" }
+                      : sub.matchScore === "Medium"
+                      ? { bg: "#FEF3C7", text: "#92400E" }
+                      : { bg: "#F3F4F6", text: "#6B7280" };
+                  return (
+                    <Card key={sub.id} className="flex flex-col justify-between">
+                      <CardContent className="pt-5">
+                        <div className="mb-2 flex items-start justify-between gap-2">
+                          <h4 className="text-sm font-bold" style={{ color: "#0F2D5E" }}>
+                            {sub.name}
+                          </h4>
+                          <Badge
+                            className="flex-shrink-0 border-0 text-xs"
+                            style={{ backgroundColor: matchColor.bg, color: matchColor.text }}
+                          >
+                            {sub.matchScore}
+                          </Badge>
+                        </div>
+                        <p className="mb-1 text-xs text-gray-400">{sub.provider}</p>
+                        <p className="mb-2 text-sm font-semibold" style={{ color: "#F5A623" }}>
+                          {sub.typicalAward}
+                        </p>
+                        <p className="mb-3 text-xs text-gray-500">{sub.description}</p>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" className="flex-1 text-xs">
+                            Learn More
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="flex-1 text-xs text-white"
+                            style={{ backgroundColor: isFlagged ? "#2E7D32" : "#0F2D5E" }}
+                            onClick={() =>
+                              setFlaggedSubsidies((prev) =>
+                                isFlagged
+                                  ? prev.filter((id) => id !== sub.id)
+                                  : [...prev, sub.id]
+                              )
+                            }
+                          >
+                            {isFlagged ? "Added" : "Add to My Funds"}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              {/* My Stacked Funds Summary */}
+              <Card className="overflow-hidden border-l-4" style={{ borderLeftColor: "#0F2D5E" }}>
+                <CardContent className="py-5">
+                  <h4 className="mb-3 font-bold" style={{ color: "#0F2D5E" }}>
+                    My Stacked Funds
+                  </h4>
+                  <div className="flex flex-col gap-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">My Spark Balance</span>
+                      <span className="font-semibold">${student.cardBalance.toFixed(2)}</span>
+                    </div>
+                    {flaggedSubsidies.map((fId) => {
+                      const sub = subsidyData.find((s) => s.id === fId);
+                      return (
+                        <div key={fId} className="flex justify-between">
+                          <span className="text-gray-600">{sub?.name}</span>
+                          <span className="font-semibold text-green-600">{sub?.typicalAward}</span>
+                        </div>
+                      );
+                    })}
+                    <hr className="my-1" />
+                    <div className="flex justify-between text-base font-bold" style={{ color: "#0F2D5E" }}>
+                      <span>Combined Potential</span>
+                      <span>
+                        ${student.cardBalance.toFixed(2)}
+                        {flaggedSubsidies.length > 0 && " + subsidies"}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-xs italic text-gray-400">
+                    Tell us when you've been approved for additional funding and we'll reflect it here.
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>

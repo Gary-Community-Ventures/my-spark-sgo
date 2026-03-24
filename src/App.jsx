@@ -7,6 +7,7 @@ import ProviderDashboard from './pages/ProviderDashboard'
 import Support from './pages/Support'
 import Admin from './pages/Admin'
 import DonorPortal from './pages/DonorPortal'
+import SetupWizard from './pages/SetupWizard'
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/support" element={<Support />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/donate" element={<DonorPortal />} />
+        <Route path="/setup" element={<SetupWizard />} />
       </Routes>
     </Router>
   )

@@ -20,7 +20,13 @@ const navLinks = [
   },
   { label: "Donate", to: "/donate" },
   { label: "Support", to: "/support" },
-  { label: "Admin", to: "/admin" },
+  {
+    label: "Admin",
+    children: [
+      { label: "Dashboard", to: "/admin" },
+      { label: "For SGOs", to: "/setup" },
+    ],
+  },
 ];
 
 function Navbar() {
