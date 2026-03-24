@@ -1383,13 +1383,13 @@ function FamilyApplication() {
       />
 
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-        {currentStep <= 4 && <StepIndicator />}
+        {currentStep <= 4 && StepIndicator()}
 
-        {currentStep === 1 && <Step1 />}
-        {currentStep === 2 && <Step2 />}
-        {currentStep === 3 && <Step3 />}
-        {currentStep === 4 && <Step4 />}
-        {currentStep === 5 && <Confirmation />}
+        {currentStep === 1 && Step1()}
+        {currentStep === 2 && Step2()}
+        {currentStep === 3 && Step3()}
+        {currentStep === 4 && Step4()}
+        {currentStep === 5 && Confirmation()}
 
         {/* Navigation buttons */}
         {currentStep <= 4 && (
